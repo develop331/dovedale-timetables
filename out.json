@@ -1,0 +1,2101 @@
+[
+    {
+        "name": "5F10",
+        "TYP": "466",
+        "DES": "\"ECS Fanory Mill Sdg. to Fanory Mill\"\n    DPD=U",
+        "DUT": "1",
+        "stops": [
+            {
+                "name": "FMSDG",
+                "FORCE": true,
+                "DEP": "18:45"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "18:48"
+            }
+        ]
+    },
+    {
+        "name": "5C60",
+        "TYP": "465",
+        "DES": "\"ECS Dovedale Central Sdg. to Dovedale Central\"\n    DPD=D",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "DCSDG",
+                "DEP": "18:45"
+            },
+            {
+                "name": "DC",
+                "PLT": "4",
+                "ARR": "18:50"
+            }
+        ]
+    },
+    {
+        "name": "5M30",
+        "TYP": "43",
+        "DES": "\"ECS Masonfield Sdg. to Masonfield\"\n    DPD=U",
+        "DUT": "3",
+        "stops": [
+            {
+                "name": "MSSDG",
+                "DEP": "18:46"
+            },
+            {
+                "name": "MS",
+                "PLT": "3",
+                "ARR": "18:48"
+            }
+        ]
+    },
+    {
+        "name": "5A70",
+        "TYP": "153",
+        "DUT": "7",
+        "DES": "ECS Ashburn Sdg. to Ashburn",
+        "stops": [
+            {
+                "name": "ABSDG",
+                "DEP": "18:46H"
+            },
+            {
+                "name": "AB",
+                "ARR": "18:51H"
+            }
+        ]
+    },
+    {
+        "name": "5A20",
+        "TYP": "142",
+        "DES": "\"ECS Fanory Mill Sdg. to Ashburn\"\n    DPD=D",
+        "DUT": "2",
+        "stops": [
+            {
+                "name": "FMSDG",
+                "DEP": "18:48"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "PAS": true,
+                "DEP": "18:50"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "18:53"
+            },
+            {
+                "name": "FH",
+                "PAS": true,
+                "DEP": "18:54H"
+            },
+            {
+                "name": "AB",
+                "PLT": "1",
+                "ARR": "18:57H"
+            }
+        ]
+    },
+    {
+        "name": "5E50",
+        "TYP": "150",
+        "DES": "\"ECS Cosdale Harbour Yd. to Dovedale East\"\n    DPD=U",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "CHYRD",
+                "FORCE": true,
+                "DEP": "18:49"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "ARR": "18:52"
+            }
+        ]
+    },
+    {
+        "name": "6H01",
+        "TYP": "68",
+        "DES": "\"Class 66 + wagons MS Sdg. to the Harbour\"\n    DPD=D",
+        "DUT": "10",
+        "stops": [
+            {
+                "name": "MSSDG",
+                "DEP": "18:50"
+            },
+            {
+                "name": "MS",
+                "PAS": true,
+                "DEP": "18:52"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "18:54"
+            },
+            {
+                "name": "DC",
+                "PAS": true,
+                "DEP": "18:55H"
+            },
+            {
+                "name": "CH",
+                "PLT": "HARB",
+                "ARR": "18:59H"
+            }
+        ]
+    },
+    {
+        "name": "2C11",
+        "TYP": "466",
+        "DES": "Semi-fast FM to DC",
+        "DPD": "U",
+        "DUT": "1",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "2",
+                "DEP": "18:55"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "18:57"
+            },
+            {
+                "name": "SAT",
+                "ARR": "18:58",
+                "DEP": "18:59H"
+            },
+            {
+                "name": "DE",
+                "PLT": "4",
+                "LNE": "UM",
+                "ARR": "19:03",
+                "DEP": "19:05"
+            },
+            {
+                "name": "WM",
+                "DEP": "19:07"
+            },
+            {
+                "name": "DC",
+                "PLT": "5",
+                "PTH": "UM",
+                "ARR": "19:09"
+            }
+        ]
+    },
+    {
+        "DES": "Express MS to FM",
+        "DPD": "D",
+        "name": "1F31",
+        "TYP": "43",
+        "DEP": "18:55",
+        "DUT": "3",
+        "stops": [
+            {
+                "name": "MS",
+                "PLT": "3",
+                "DEP": "18:55"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "18:57"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "18:58H",
+                "DEP": "19:02"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:04"
+            },
+            {
+                "name": "DE",
+                "PLT": "3",
+                "PTH": "DM",
+                "ARR": "19:06",
+                "DEP": "19:09H"
+            },
+            {
+                "name": "SAT",
+                "PAS": true,
+                "DEP": "19:13"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "19:14"
+            },
+            {
+                "name": "FM",
+                "PLT": "3",
+                "ARR": "19:16"
+            }
+        ]
+    },
+    {
+        "DES": "Slow DE to MS via CH",
+        "DPD": "U",
+        "name": "2M51",
+        "TYP": "150",
+        "DEP": "18:58",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "6",
+                "LNE": "HL",
+                "DEP": "18:58"
+            },
+            {
+                "name": "CH",
+                "ARR": "19:01H",
+                "DEP": "19:02H"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "HL",
+                "LNE": "UM",
+                "ARR": "19:06",
+                "DEP": "19:08"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:09H"
+            },
+            {
+                "name": "MS",
+                "ARR": "19:11"
+            }
+        ]
+    },
+    {
+        "DES": "Slow AB to FM",
+        "DPD": "U",
+        "name": "2F71",
+        "TYP": "153",
+        "DEP": "18:59",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "18:59"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "19:01H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:03H"
+            },
+            {
+                "name": "FM",
+                "PLT": "1",
+                "ARR": "19:06"
+            }
+        ]
+    },
+    {
+        "name": "1M61",
+        "TYP": "465",
+        "DES": "DC to MS",
+        "DPD": "D",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "DC",
+                "PLT": "4",
+                "DEP": "18:59H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "LNE": "UM",
+                "DEP": "19:01"
+            },
+            {
+                "name": "MS",
+                "ARR": "19:03"
+            }
+        ]
+    },
+    {
+        "name": "5E40",
+        "TYP": "319",
+        "DES": "\"ECS Cosdale Harbour Yd. to Dovedale East\"\n    DPD=D",
+        "DUT": "4",
+        "stops": [
+            {
+                "name": "CHYRD",
+                "FORCE": true,
+                "DEP": "19:01"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "PTH": "HL",
+                "ARR": "19:04"
+            }
+        ]
+    },
+    {
+        "DES": "AB to DC",
+        "DPD": "U",
+        "name": "2E21",
+        "TYP": "142",
+        "DEP": "19:08",
+        "DUT": "2",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "19:08"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "19:10H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:12H"
+            },
+            {
+                "name": "FM",
+                "PLT": "1",
+                "ARR": "19:15",
+                "DEP": "19:16"
+            },
+            {
+                "name": "CO",
+                "REQ": true,
+                "DEP": "19:18"
+            },
+            {
+                "name": "SAT",
+                "ARR": "19:19",
+                "DEP": "19:20"
+            },
+            {
+                "name": "DE",
+                "PLT": "1",
+                "ARR": "19:23H"
+            }
+        ]
+    },
+    {
+        "DES": "Semifast MS to DE",
+        "DPD": "D",
+        "name": "1E61",
+        "TYP": "465",
+        "DEP": "19:08",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "19:08"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:09H"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "19:11",
+                "DEP": "19:13"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:15"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "PTH": "DM",
+                "ARR": "19:16H"
+            }
+        ]
+    },
+    {
+        "name": "0M01",
+        "TYP": "68",
+        "DES": "\"ES44AC engine, Harbour to MS Sdg.\"\n    DPD=U",
+        "DUT": "10",
+        "stops": [
+            {
+                "name": "CH",
+                "PLT": "HARB",
+                "DEP": "19:08"
+            },
+            {
+                "name": "DC",
+                "PAS": true,
+                "DEP": "19:12"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:13H"
+            },
+            {
+                "name": "MS",
+                "PAS": true,
+                "DEP": "19:15H"
+            },
+            {
+                "name": "MSSDG",
+                "ARR": "19:16H"
+            }
+        ]
+    },
+    {
+        "name": "1M40",
+        "DES": "\"Express FM to MS\"\n    DPD=U",
+        "DUT": "4",
+        "TYP": "319",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "6",
+                "LNE": "UM",
+                "DEP": "19:10"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:12"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "UM",
+                "LNE": "UM",
+                "ARR": "19:14",
+                "DEP": "19:17H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "LNE": "UM",
+                "DEP": "19:19"
+            },
+            {
+                "name": "MS",
+                "PLT": "3",
+                "ARR": "19:21"
+            }
+        ]
+    },
+    {
+        "DES": "ECS Fanory Mill to Fanory Mill",
+        "DPD": "U",
+        "name": "5F71",
+        "TYP": "153",
+        "DEP": "19:10",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "1",
+                "DEP": "19:10"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "19:13"
+            }
+        ]
+    },
+    {
+        "DES": "Slow FM to AB",
+        "DPD": "D",
+        "name": "2A71",
+        "TYP": "153",
+        "DEP": "19:16",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "2",
+                "DEP": "19:16"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:18H"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "19:20H"
+            },
+            {
+                "name": "AB",
+                "ARR": "19:23"
+            }
+        ]
+    },
+    {
+        "DES": "Slow MS to DE via CH",
+        "DPD": "D",
+        "name": "2E51",
+        "TYP": "150",
+        "DEP": "19:17",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "19:17"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:18H"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "HL",
+                "ARR": "19:20",
+                "DEP": "19:22"
+            },
+            {
+                "name": "CH",
+                "ARR": "19:25H",
+                "DEP": "19:26H"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "PTH": "HL",
+                "ARR": "19:30"
+            }
+        ]
+    },
+    {
+        "DES": "Semi-fast DC to AB",
+        "DPD": "D",
+        "name": "2A11",
+        "TYP": "466",
+        "DEP": "19:18",
+        "DUT": "1",
+        "stops": [
+            {
+                "name": "DC",
+                "PLT": "5",
+                "LNE": "DM",
+                "DEP": "19:18"
+            },
+            {
+                "name": "WM",
+                "DEP": "19:20"
+            },
+            {
+                "name": "DE",
+                "PLT": "5",
+                "PTH": "DM",
+                "ARR": "19:22",
+                "DEP": "19:23H"
+            },
+            {
+                "name": "SAT",
+                "ARR": "19:27",
+                "DEP": "19:28"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "19:29"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "19:31",
+                "DEP": "19:32"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:34H"
+            },
+            {
+                "name": "FH",
+                "PAS": true,
+                "DEP": "19:36H"
+            },
+            {
+                "name": "AB",
+                "ARR": "19:39"
+            }
+        ]
+    },
+    {
+        "DES": "Semifast DE to MS",
+        "DPD": "U",
+        "name": "1M62",
+        "TYP": "465",
+        "DEP": "19:22",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "6",
+                "LNE": "UM",
+                "DEP": "19:22"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:23H"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "UM",
+                "LNE": "UM",
+                "ARR": "19:25H",
+                "DEP": "19:27H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:29"
+            },
+            {
+                "name": "MS",
+                "ARR": "19:30H"
+            }
+        ]
+    },
+    {
+        "DES": "Express FM to MS",
+        "DPD": "U",
+        "name": "1M31",
+        "TYP": "43",
+        "DEP": "19:24",
+        "DUT": "3",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "3",
+                "DEP": "19:24"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "19:26"
+            },
+            {
+                "name": "SAT",
+                "PAS": true,
+                "DEP": "19:27"
+            },
+            {
+                "name": "DE",
+                "PLT": "2",
+                "LNE": "UM",
+                "ARR": "19:30H",
+                "DEP": "19:34"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:36"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "UM",
+                "LNE": "UM",
+                "ARR": "19:38",
+                "DEP": "19:41H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "LNE": "UM",
+                "DEP": "19:43"
+            },
+            {
+                "name": "MS",
+                "PLT": "3",
+                "ARR": "19:45"
+            }
+        ]
+    },
+    {
+        "DES": "Express MS to FM",
+        "DPD": "D",
+        "name": "1F41",
+        "TYP": "319",
+        "DEP": "19:25",
+        "DUT": "4",
+        "stops": [
+            {
+                "name": "MS",
+                "PLT": "3",
+                "DEP": "19:25"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:27"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "19:28H",
+                "DEP": "19:32"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:34"
+            },
+            {
+                "name": "DE",
+                "PLT": "3",
+                "PTH": "DM",
+                "ARR": "19:36",
+                "DEP": "19:39H"
+            },
+            {
+                "name": "SAT",
+                "PAS": true,
+                "DEP": "19:43"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "19:44"
+            },
+            {
+                "name": "FM",
+                "PLT": "3",
+                "ARR": "19:46"
+            }
+        ]
+    },
+    {
+        "DES": "DC to AB",
+        "DPD": "D",
+        "name": "2A21",
+        "TYP": "142",
+        "DEP": "19:30",
+        "DUT": "2",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "1",
+                "DEP": "19:30"
+            },
+            {
+                "name": "SAT",
+                "ARR": "19:33H",
+                "DEP": "19:34H"
+            },
+            {
+                "name": "CO",
+                "REQ": true,
+                "DEP": "19:35H"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "19:37H",
+                "DEP": "19:38H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:41"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "19:43"
+            },
+            {
+                "name": "AB",
+                "ARR": "19:45H"
+            }
+        ]
+    },
+    {
+        "DES": "Slow AB to FM",
+        "DPD": "U",
+        "name": "2F72",
+        "TYP": "153",
+        "DEP": "19:30",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "19:30"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "19:32H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:34H"
+            },
+            {
+                "name": "FM",
+                "PLT": "1",
+                "ARR": "19:37"
+            }
+        ]
+    },
+    {
+        "name": "1Z99",
+        "TYP": "66",
+        "DUT": "9",
+        "DPD": "D",
+        "DES": "Snowplough clearing the line",
+        "stops": [
+            {
+                "name": "MSSDG",
+                "DEP": "19:30"
+            },
+            {
+                "name": "MS",
+                "PAS": true,
+                "DEP": "19:31H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:33H"
+            },
+            {
+                "name": "DC",
+                "PAS": true,
+                "DEP": "19:35"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:37"
+            },
+            {
+                "name": "DE",
+                "ARR": "19:38H",
+                "DEP": "19:43H"
+            },
+            {
+                "name": "SAT",
+                "PLT": "1",
+                "ARR": "19:47"
+            }
+        ]
+    },
+    {
+        "DES": "Slow DE to MS via CH",
+        "DPD": "U",
+        "name": "2M52",
+        "TYP": "150",
+        "DEP": "19:38",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "6",
+                "LNE": "HL",
+                "DEP": "19:38"
+            },
+            {
+                "name": "CH",
+                "ARR": "19:41H",
+                "DEP": "19:42H"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "HL",
+                "LNE": "UM",
+                "ARR": "19:46",
+                "DEP": "19:48"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:49H"
+            },
+            {
+                "name": "MS",
+                "ARR": "19:51"
+            }
+        ]
+    },
+    {
+        "DES": "Semifast MS to DE",
+        "DPD": "D",
+        "name": "1E62",
+        "TYP": "465",
+        "DEP": "19:38",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "19:38"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:39H"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "19:41",
+                "DEP": "19:43"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:45"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "PTH": "DM",
+                "ARR": "19:46H"
+            }
+        ]
+    },
+    {
+        "DES": "ECS Fanory Mill to Fanory Mill",
+        "DPD": "U",
+        "name": "5F73",
+        "TYP": "153",
+        "DEP": "19:39",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "1",
+                "DEP": "19:39"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "19:42"
+            }
+        ]
+    },
+    {
+        "name": "6H02",
+        "TYP": "68",
+        "DES": "\"Class 66 + wagons MS Sdg. to the Harbour\"\n    DPD=D",
+        "DUT": "10",
+        "stops": [
+            {
+                "name": "MSSDG",
+                "DEP": "19:47"
+            },
+            {
+                "name": "MS",
+                "PAS": true,
+                "DEP": "19:49"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:51"
+            },
+            {
+                "name": "DC",
+                "PAS": true,
+                "DEP": "19:52H"
+            },
+            {
+                "name": "CH",
+                "PLT": "HARB",
+                "ARR": "19:56H"
+            }
+        ]
+    },
+    {
+        "name": "1Z99-1",
+        "TYP": "66",
+        "DUT": "9",
+        "DES": "Snowplough clearing the line",
+        "stops": [
+            {
+                "name": "SAT",
+                "PLT": "1",
+                "DEP": "19:47H"
+            },
+            {
+                "name": "SAT",
+                "PLT": "2",
+                "ARR": "19:50"
+            }
+        ]
+    },
+    {
+        "DES": "Semi-fast AB to DC",
+        "DPD": "U",
+        "name": "2C12",
+        "TYP": "466",
+        "DEP": "19:49",
+        "DUT": "1",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "19:49"
+            },
+            {
+                "name": "FH",
+                "PAS": true,
+                "DEP": "19:51H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:53H"
+            },
+            {
+                "name": "FM",
+                "PLT": "1",
+                "ARR": "19:56",
+                "DEP": "19:57"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "20:00H"
+            },
+            {
+                "name": "SAT",
+                "ARR": "20:01H",
+                "DEP": "20:03"
+            },
+            {
+                "name": "DE",
+                "PLT": "4",
+                "LNE": "UM",
+                "ARR": "20:06H",
+                "DEP": "20:08H"
+            },
+            {
+                "name": "WM",
+                "DEP": "20:10H"
+            },
+            {
+                "name": "DC",
+                "PLT": "5",
+                "PTH": "UM",
+                "ARR": "20:12H"
+            }
+        ]
+    },
+    {
+        "DES": "Slow FM to AB",
+        "DPD": "D",
+        "name": "2A73",
+        "TYP": "153",
+        "DEP": "19:51",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "2",
+                "DEP": "19:51"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "19:53H"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "19:55H"
+            },
+            {
+                "name": "AB",
+                "ARR": "19:58"
+            }
+        ]
+    },
+    {
+        "name": "1Z99-2",
+        "TYP": "66",
+        "DUT": "9",
+        "DPD": "U",
+        "DES": "Snowplough clearing the line",
+        "stops": [
+            {
+                "name": "SAT",
+                "PLT": "2",
+                "DEP": "19:51"
+            },
+            {
+                "name": "DE",
+                "ARR": "19:54H",
+                "DEP": "19:56"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:58"
+            },
+            {
+                "name": "DC",
+                "PTH": "UM",
+                "LNE": "UM",
+                "PAS": true,
+                "DEP": "20:00"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "LNE": "UM",
+                "DEP": "20:01H"
+            },
+            {
+                "name": "MS",
+                "PAS": true,
+                "DEP": "20:03H"
+            },
+            {
+                "name": "MSSDG",
+                "ARR": "20:05"
+            }
+        ]
+    },
+    {
+        "DES": "Semifast DE to MS",
+        "DPD": "U",
+        "name": "1M63",
+        "TYP": "465",
+        "DEP": "19:52",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "6",
+                "LNE": "UM",
+                "DEP": "19:52"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "19:53H"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "UM",
+                "LNE": "UM",
+                "ARR": "19:55H",
+                "DEP": "19:57H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:59"
+            },
+            {
+                "name": "MS",
+                "ARR": "20:00H"
+            }
+        ]
+    },
+    {
+        "DES": "Express FM to MS",
+        "DPD": "U",
+        "name": "1M41",
+        "TYP": "319",
+        "DEP": "19:54",
+        "DUT": "4",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "3",
+                "DEP": "19:54"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "19:56"
+            },
+            {
+                "name": "SAT",
+                "PAS": true,
+                "DEP": "19:57"
+            },
+            {
+                "name": "DE",
+                "PLT": "2",
+                "LNE": "UM",
+                "ARR": "20:00H",
+                "DEP": "20:04"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "20:06"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "UM",
+                "LNE": "UM",
+                "ARR": "20:08",
+                "DEP": "20:11H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "LNE": "UM",
+                "DEP": "20:13"
+            },
+            {
+                "name": "MS",
+                "PLT": "3",
+                "ARR": "20:15"
+            }
+        ]
+    },
+    {
+        "DES": "Express MS to FM",
+        "DPD": "D",
+        "name": "1F32",
+        "TYP": "43",
+        "DEP": "19:55",
+        "DUT": "3",
+        "stops": [
+            {
+                "name": "MS",
+                "PLT": "3",
+                "DEP": "19:55"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "19:57"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "19:58H",
+                "DEP": "20:02"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "20:04"
+            },
+            {
+                "name": "DE",
+                "PLT": "3",
+                "PTH": "DM",
+                "ARR": "20:06",
+                "DEP": "20:09H"
+            },
+            {
+                "name": "SAT",
+                "PAS": true,
+                "DEP": "20:13"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "20:14"
+            },
+            {
+                "name": "FM",
+                "PLT": "3",
+                "ARR": "20:16"
+            }
+        ]
+    },
+    {
+        "DES": "Slow MS to DE via CH",
+        "DPD": "D",
+        "name": "2E52",
+        "TYP": "150",
+        "DEP": "20:00",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "20:00"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:01H"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "HL",
+                "ARR": "20:03",
+                "DEP": "20:05"
+            },
+            {
+                "name": "CH",
+                "ARR": "20:08H",
+                "DEP": "20:09H"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "PTH": "HL",
+                "ARR": "20:13"
+            }
+        ]
+    },
+    {
+        "DES": "Slow AB to FM",
+        "DPD": "U",
+        "name": "2F74",
+        "TYP": "153",
+        "DEP": "20:00",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "20:00"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "20:02H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "20:04H"
+            },
+            {
+                "name": "FM",
+                "PLT": "1",
+                "ARR": "20:07"
+            }
+        ]
+    },
+    {
+        "DES": "AB to DC",
+        "DPD": "U",
+        "name": "2E22",
+        "TYP": "142",
+        "DEP": "20:08",
+        "DUT": "2",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "20:08"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "20:10H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "20:12H"
+            },
+            {
+                "name": "FM",
+                "PLT": "1",
+                "ARR": "20:15",
+                "DEP": "20:16"
+            },
+            {
+                "name": "CO",
+                "REQ": true,
+                "DEP": "20:18"
+            },
+            {
+                "name": "SAT",
+                "ARR": "20:19",
+                "DEP": "20:20"
+            },
+            {
+                "name": "DE",
+                "PLT": "1",
+                "ARR": "20:23H"
+            }
+        ]
+    },
+    {
+        "DES": "Semifast MS to DE",
+        "DPD": "D",
+        "name": "1E63",
+        "TYP": "465",
+        "DEP": "20:08",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "20:08"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:09H"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "20:11",
+                "DEP": "20:13"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "20:15"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "PTH": "DM",
+                "ARR": "20:16H"
+            }
+        ]
+    },
+    {
+        "DES": "ECS Fanory Mill to Fanory Mill",
+        "DPD": "U",
+        "name": "5F74",
+        "TYP": "153",
+        "DEP": "20:08H",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "1",
+                "DEP": "20:08H"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "20:11H"
+            }
+        ]
+    },
+    {
+        "name": "0M02",
+        "TYP": "68",
+        "DES": "\"68 engine, Harbour to MS Sdg.\"\n    DPD=U",
+        "DUT": "10",
+        "stops": [
+            {
+                "name": "CH",
+                "PLT": "HARB",
+                "DEP": "20:12H"
+            },
+            {
+                "name": "DC",
+                "PAS": true,
+                "DEP": "20:16H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:18"
+            },
+            {
+                "name": "MS",
+                "PAS": true,
+                "DEP": "20:20"
+            },
+            {
+                "name": "MSSDG",
+                "ARR": "20:21"
+            }
+        ]
+    },
+    {
+        "DES": "Semi-fast DC to AB",
+        "DPD": "D",
+        "name": "2A12",
+        "TYP": "466",
+        "DEP": "20:18",
+        "DUT": "1",
+        "stops": [
+            {
+                "name": "DC",
+                "PLT": "5",
+                "LNE": "DM",
+                "DEP": "20:18"
+            },
+            {
+                "name": "WM",
+                "DEP": "20:20"
+            },
+            {
+                "name": "DE",
+                "PLT": "5",
+                "PTH": "DM",
+                "ARR": "20:22",
+                "DEP": "20:23H"
+            },
+            {
+                "name": "SAT",
+                "ARR": "20:27",
+                "DEP": "20:28"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "20:29"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "20:31",
+                "DEP": "20:32"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "20:34H"
+            },
+            {
+                "name": "FH",
+                "PAS": true,
+                "DEP": "20:36H"
+            },
+            {
+                "name": "AB",
+                "ARR": "20:39"
+            }
+        ]
+    },
+    {
+        "DES": "Slow FM to AB",
+        "DPD": "D",
+        "name": "2A74",
+        "TYP": "153",
+        "DEP": "20:19",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "2",
+                "DEP": "20:19"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "20:21H"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "20:23H"
+            },
+            {
+                "name": "AB",
+                "ARR": "20:26"
+            }
+        ]
+    },
+    {
+        "DES": "Slow DE to MS via CH",
+        "DPD": "U",
+        "name": "2M53",
+        "TYP": "150",
+        "DEP": "20:20",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "6",
+                "LNE": "HL",
+                "DEP": "20:20"
+            },
+            {
+                "name": "CH",
+                "ARR": "20:23H",
+                "DEP": "20:24H"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "HL",
+                "LNE": "UM",
+                "ARR": "20:28",
+                "DEP": "20:30"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:31H"
+            },
+            {
+                "name": "MS",
+                "ARR": "20:33"
+            }
+        ]
+    },
+    {
+        "DES": "Semifast DE to MS",
+        "DPD": "U",
+        "name": "1M64",
+        "TYP": "465",
+        "DEP": "20:22",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "6",
+                "LNE": "UM",
+                "DEP": "20:22"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "20:23H"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "UM",
+                "LNE": "UM",
+                "ARR": "20:25H",
+                "DEP": "20:27H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:29"
+            },
+            {
+                "name": "MS",
+                "ARR": "20:30H"
+            }
+        ]
+    },
+    {
+        "DES": "Express FM to MS",
+        "DPD": "U",
+        "name": "1M32",
+        "TYP": "43",
+        "DEP": "20:24",
+        "DUT": "3",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "3",
+                "DEP": "20:24"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "20:26"
+            },
+            {
+                "name": "SAT",
+                "PAS": true,
+                "DEP": "20:27"
+            },
+            {
+                "name": "DE",
+                "PLT": "2",
+                "LNE": "UM",
+                "ARR": "20:30H",
+                "DEP": "20:34"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "20:36"
+            },
+            {
+                "name": "DC",
+                "PLT": "2",
+                "PTH": "UM",
+                "LNE": "UM",
+                "ARR": "20:38",
+                "DEP": "20:41H"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "LNE": "UM",
+                "DEP": "20:43"
+            },
+            {
+                "name": "MS",
+                "PLT": "3",
+                "ARR": "20:45"
+            }
+        ]
+    },
+    {
+        "DES": "Express MS to FM",
+        "DPD": "D",
+        "name": "1F42",
+        "TYP": "319",
+        "DEP": "20:25",
+        "DUT": "4",
+        "stops": [
+            {
+                "name": "MS",
+                "PLT": "3",
+                "DEP": "20:25"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:27"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "20:28H",
+                "DEP": "20:32"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "20:34"
+            },
+            {
+                "name": "DE",
+                "PLT": "3",
+                "PTH": "DM",
+                "ARR": "20:36",
+                "DEP": "20:39H"
+            },
+            {
+                "name": "SAT",
+                "PAS": true,
+                "DEP": "20:43"
+            },
+            {
+                "name": "CO",
+                "PAS": true,
+                "DEP": "20:44"
+            },
+            {
+                "name": "FM",
+                "PLT": "3",
+                "ARR": "20:46"
+            }
+        ]
+    },
+    {
+        "DES": "Slow AB to FM",
+        "DPD": "U",
+        "name": "2F75",
+        "TYP": "153",
+        "DEP": "20:30",
+        "DUT": "7",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "20:30"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "20:32H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "20:34H"
+            },
+            {
+                "name": "FM",
+                "PLT": "1",
+                "ARR": "20:37"
+            }
+        ]
+    },
+    {
+        "DES": "DC to AB",
+        "DPD": "D",
+        "name": "2A22",
+        "TYP": "142",
+        "DEP": "20:31H",
+        "DUT": "2",
+        "stops": [
+            {
+                "name": "DE",
+                "PLT": "1",
+                "DEP": "20:31H"
+            },
+            {
+                "name": "SAT",
+                "ARR": "20:35",
+                "DEP": "20:36"
+            },
+            {
+                "name": "CO",
+                "REQ": true,
+                "DEP": "20:37"
+            },
+            {
+                "name": "FM",
+                "PLT": "2",
+                "ARR": "20:39",
+                "DEP": "20:40"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "20:42H"
+            },
+            {
+                "name": "FH",
+                "REQ": true,
+                "DEP": "20:44H"
+            },
+            {
+                "name": "AB",
+                "ARR": "20:47"
+            }
+        ]
+    },
+    {
+        "DES": "Semifast MS to DE",
+        "DPD": "D",
+        "name": "1E64",
+        "TYP": "465",
+        "DEP": "20:38",
+        "DUT": "6",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "20:38"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:39H"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "DM",
+                "ARR": "20:41",
+                "DEP": "20:43"
+            },
+            {
+                "name": "WM",
+                "PAS": true,
+                "DEP": "20:45"
+            },
+            {
+                "name": "DE",
+                "PLT": "6",
+                "PTH": "DM",
+                "ARR": "20:46H"
+            }
+        ]
+    },
+    {
+        "name": "2H54",
+        "TYP": "150",
+        "DES": "Slow MS to DE via CH",
+        "DPD": "D",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "20:41"
+            },
+            {
+                "name": "MC",
+                "PAS": true,
+                "DEP": "20:42H"
+            },
+            {
+                "name": "DC",
+                "PLT": "1",
+                "PTH": "DM",
+                "LNE": "HL",
+                "ARR": "20:44",
+                "DEP": "20:46"
+            },
+            {
+                "name": "CH",
+                "ARR": "20:49H"
+            }
+        ]
+    },
+    {
+        "name": "5F75",
+        "TYP": "153",
+        "DUT": "7",
+        "DES": "ECS Fanory Mill to Fanory Mill Sdg.",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "1",
+                "DEP": "20:47"
+            },
+            {
+                "name": "FMSDG",
+                "ARR": "20:50"
+            }
+        ]
+    },
+    {
+        "name": "5F14",
+        "TYP": "466",
+        "DES": "\"ECS Ashburn to Fanory Mill Sdg.\"\n    DPD=D",
+        "DUT": "1",
+        "stops": [
+            {
+                "name": "AB",
+                "DEP": "20:48"
+            },
+            {
+                "name": "FH",
+                "PAS": true,
+                "DEP": "20:50H"
+            },
+            {
+                "name": "BL",
+                "PAS": true,
+                "DEP": "20:52H"
+            },
+            {
+                "name": "FM",
+                "ARR": "20:55",
+                "DEP": "20:56H"
+            },
+            {
+                "name": "FMSDG",
+                "ARR": "20:59"
+            }
+        ]
+    },
+    {
+        "name": "5M34",
+        "TYP": "43",
+        "DES": "\"ECS Masonfield to Masonfield Sdg.\"\n    DPD=D",
+        "DUT": "3",
+        "stops": [
+            {
+                "name": "MS",
+                "DEP": "20:50"
+            },
+            {
+                "name": "MSSDG",
+                "ARR": "20:53"
+            }
+        ]
+    },
+    {
+        "name": "5A23",
+        "TYP": "142",
+        "DES": "\"ECS Ashburn to Ashburn Sdg.\"\n    DPD=U",
+        "DUT": "2",
+        "stops": [
+            {
+                "name": "AB",
+                "FORCE": true,
+                "DEP": "20:51"
+            },
+            {
+                "name": "ABSDG",
+                "FORCE": true,
+                "ARR": "20:55"
+            }
+        ]
+    },
+    {
+        "name": "5F43",
+        "TYP": "319",
+        "DES": "\"ECS Fanory Mill to Fanory Mill Sdg.\"\n    DPD=D",
+        "DUT": "4",
+        "stops": [
+            {
+                "name": "FM",
+                "PLT": "3",
+                "DEP": "20:52"
+            },
+            {
+                "name": "FMSDG",
+                "ARR": "20:55"
+            }
+        ]
+    },
+    {
+        "name": "5H54",
+        "TYP": "150",
+        "DES": "ECS Cosdale Harbour to Cosdale Harbour Yd.",
+        "DPD": "D",
+        "DUT": "5",
+        "stops": [
+            {
+                "name": "CH",
+                "DEP": "20:52"
+            },
+            {
+                "name": "CHYRD",
+                "FORCE": true,
+                "ARR": "20:55"
+            }
+        ]
+    },
+    {
+        "name": "5H65",
+        "TYP": "465",
+        "DUT": "6",
+        "DPD": "U",
+        "DES": "ECS Dovedale East to Cosdale Harbour Yd.",
+        "stops": [
+            {
+                "name": "DE",
+                "DEP": "20:54"
+            },
+            {
+                "name": "CHYRD",
+                "FORCE": true,
+                "ARR": "20:58H"
+            }
+        ]
+    }
+]

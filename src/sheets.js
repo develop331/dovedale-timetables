@@ -44,7 +44,7 @@ export async function fetchSheetGrid(sheetName) {
     spreadsheetId: SHEET_ID,
     ranges: [sheetName],
     includeGridData: true,
-    fields: "sheets.properties.title,sheets.data.rowData.values(formattedValue,note)",
+    fields: "sheets.properties.title,sheets.data.rowData.values(formattedValue,note,effectiveFormat.textFormat.strikethrough)",
   });
   return response.data.sheets || [];
 }
@@ -74,16 +74,17 @@ export async function getSheetIdMap() {
 
 export function buildSheetLayout(sheets) {
   if (!sheets.length || !sheets[0].data || !sheets[0].data.length) {
-    return { headers: [], rowLabels: [], rows: [] };
+    return { headers: [], headerNotes: [], rowLabels: [], rows: [] };
   }
 
   const rowData = sheets[0].data[0].rowData || [];
   if (rowData.length === 0) {
-    return { headers: [], rowLabels: [], rows: [] };
+    return { headers: [], headerNotes: [], rowLabels: [], rows: [] };
   }
 
   const headerRow = rowData[0].values || [];
   const headers = headerRow.map((cell) => String(cell.formattedValue || "").trim());
+  const headerNotes = headerRow.map((cell) => String(cell.note || "").trim());
   const maxCols = headers.length;
 
   const rows = rowData.slice(1).map((row) => {
@@ -91,16 +92,18 @@ export function buildSheetLayout(sheets) {
     const rowCells = [];
     for (let i = 0; i < maxCols; i += 1) {
       const cell = cells[i] || {};
+      const strikethrough = cell.effectiveFormat?.textFormat?.strikethrough || false;
       rowCells.push({
         value: String(cell.formattedValue || ""),
         note: String(cell.note || ""),
+        strikethrough: strikethrough,
       });
     }
     return rowCells;
   });
 
   const rowLabels = rows.map((row) => String(row[0]?.value || "").trim());
-  return { headers, rowLabels, rows };
+  return { headers, headerNotes, rowLabels, rows };
 }
 
 export async function loadData() {

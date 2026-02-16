@@ -36,6 +36,7 @@ function buildLineupsForSheet(info) {
         locationMap.get(headcode) ||
         {
           headcode,
+          headcodeNote: info.headerNotes?.[col] || "",
           arrival: "",
           departure: "",
           platform: "",
@@ -46,6 +47,7 @@ function buildLineupsForSheet(info) {
           platformNote: "",
           pthNote: "",
           lneNote: "",
+          departureStrikethrough: false,
         };
       if (type === "arr") {
         entry.arrival = value;
@@ -53,6 +55,7 @@ function buildLineupsForSheet(info) {
       } else if (type === "dep") {
         entry.departure = value;
         entry.departureNote = note;
+        entry.departureStrikethrough = cell.strikethrough || false;
       } else if (type === "plt") {
         entry.platform = value;
         entry.platformNote = note;
@@ -218,12 +221,19 @@ function getPreviousHeadcodeAtLocation(headcodeChain, targetHeadcode, targetLoca
   return null;
 }
 
-function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headcodeChain, headcode, targetLocation) {
+function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headcodeChain, headcode, targetLocation, allDelayContexts = {}, visited = new Set()) {
   let currentHeadcode = headcode;
   const targetIdx = locationIndices[targetLocation];
   if (targetIdx === undefined || targetIdx < 0) {
     return 0;
   }
+
+  // Prevent infinite recursion
+  const visitKey = `${headcode}:${targetLocation}`;
+  if (visited.has(visitKey)) {
+    return 0;
+  }
+  visited.add(visitKey);
 
   console.log(`[getAnticipatedDelay] Looking for delays for ${headcode} at ${targetLocation}`);
 
@@ -246,13 +256,41 @@ function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headc
       console.log(`[getAnticipatedDelay] Found chain: ${prevHeadcode} -> ${currentHeadcode} at ${location}`);
       // Recursively get the anticipated delay for the previous service
       // This handles multi-hop chains like 5F10 -> 2C11 -> 2A11
-      const prevDelay = getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headcodeChain, prevHeadcode, location);
+      const prevDelay = getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headcodeChain, prevHeadcode, location, allDelayContexts, visited);
       if (prevDelay !== 0) {
         console.log(`[getAnticipatedDelay] Inherited delay from ${prevHeadcode}: ${prevDelay}`);
         return prevDelay;
       }
       // Continue searching further back
       currentHeadcode = prevHeadcode;
+    }
+  }
+
+  // Cross-sheet chain check: Look in other sheets for a headcode that chains TO this one
+  if (Object.keys(allDelayContexts).length > 0) {
+    console.log(`[getAnticipatedDelay] Checking other sheets for chains TO ${currentHeadcode}`);
+    for (const [sheetName, context] of Object.entries(allDelayContexts)) {
+      // Look for ANY headcode in this sheet that chains to currentHeadcode
+      for (const [prevHeadcode, transitions] of Object.entries(context.headcodeChain)) {
+        for (const transition of transitions) {
+          if (transition.nextHeadcode === currentHeadcode) {
+            console.log(`[getAnticipatedDelay] Found cross-sheet chain: ${prevHeadcode} (${sheetName}) → ${currentHeadcode}`);
+            // Now check if that previous headcode has delays
+            if (context.history[prevHeadcode]) {
+              const delays = context.history[prevHeadcode];
+              // Get the most recent delay from that headcode
+              const locations = context.locationOrder;
+              for (let i = locations.length - 1; i >= 0; i--) {
+                const loc = locations[i];
+                if (delays[loc] !== undefined) {
+                  console.log(`[getAnticipatedDelay] Using delay from ${prevHeadcode} in ${sheetName} at ${loc}: ${delays[loc]}`);
+                  return delays[loc];
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -287,7 +325,8 @@ export function buildLineups(data, considerDelays = false) {
               delayContext.locationIndices,
               delayContext.headcodeChain,
               entry.headcode,
-              location
+              location,
+              delayContexts // Pass all contexts for cross-sheet chains
             )
           : 0;
         combined[location].push({
@@ -339,6 +378,7 @@ export function getAnticipatedDelayForHeadcode(delayContexts, sheet, headcode, l
     delayContext.locationIndices,
     delayContext.headcodeChain,
     headcode,
-    location
+    location,
+    delayContexts // Pass all contexts for cross-sheet chains
   );
 }

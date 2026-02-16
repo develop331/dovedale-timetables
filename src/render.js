@@ -40,20 +40,21 @@ function renderCellDisplayWithEstimate(scheduledValue, noteValue, anticipatedDel
   return renderCellDisplay(scheduledValue, noteValue);
 }
 
-function renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, anticipatedDelay) {
+function renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, anticipatedDelay, strikethrough = false) {
   const display = anticipatedDelay && anticipatedDelay !== 0 
     ? renderCellDisplayWithEstimate(value, note, anticipatedDelay)
     : renderCellDisplay(value, note);
   const safeValue = escapeHtml(value);
   const safeNote = escapeHtml(note);
-  if (rowIndex === null || rowIndex === undefined) {
-    return `<td>${display}</td>`;
+  if (rowIndex === null || rowIndex === undefined || strikethrough) {
+    const className = strikethrough ? ' class="strikethrough"' : '';
+    return `<td${className}>${display}</td>`;
   }
   return `<td class="editable" data-sheet="${escapeHtml(sheet)}" data-row="${rowIndex}" data-col="${columnIndex}" data-type="${type}" data-value="${safeValue}" data-note="${safeNote}">${display}</td>`;
 }
 
-function renderEditableCell(value, note, sheet, rowIndex, columnIndex, type) {
-  return renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, 0);
+function renderEditableCell(value, note, sheet, rowIndex, columnIndex, type, strikethrough = false) {
+  return renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, 0, strikethrough);
 }
 
 function renderRecord(sheet, columnIndex, points) {
@@ -71,12 +72,15 @@ function renderRecord(sheet, columnIndex, points) {
         arrivalRow,
         departureRow,
         anticipatedDelay,
+        platformStrikethrough,
+        arrivalStrikethrough,
+        departureStrikethrough,
       }) =>
         `<tr>
           <th>${escapeHtml(location)}</th>
-          ${renderEditableCell(platform, platformNote, sheet, platformRow, columnIndex, "plt")}
-          ${renderEditableCellWithEstimate(arrival, arrivalNote, sheet, arrivalRow, columnIndex, "arr", anticipatedDelay)}
-          ${renderEditableCellWithEstimate(departure, departureNote, sheet, departureRow, columnIndex, "dep", anticipatedDelay)}
+          ${renderEditableCell(platform, platformNote, sheet, platformRow, columnIndex, "plt", platformStrikethrough)}
+          ${renderEditableCellWithEstimate(arrival, arrivalNote, sheet, arrivalRow, columnIndex, "arr", anticipatedDelay, arrivalStrikethrough)}
+          ${renderEditableCellWithEstimate(departure, departureNote, sheet, departureRow, columnIndex, "dep", anticipatedDelay, departureStrikethrough)}
         </tr>`
     )
     .join("");
@@ -102,8 +106,17 @@ export function renderPage({ headcode, results, error }) {
     : results.length
       ? results
           .map(
-            (result) =>
-              `<section><h2>${escapeHtml(result.headcode)}</h2>${renderRecord(result.sheet, result.columnIndex, result.points)}</section>`
+            (result) => {
+              const routeChangeBox = result.headcodeNote
+                ? `<div class="route-change-box">
+                     <div class="route-change-icon">⚠️</div>
+                     <div class="route-change-content">
+                       <strong>Route Change:</strong> ${escapeHtml(result.headcodeNote)}
+                     </div>
+                   </div>`
+                : '';
+              return `${routeChangeBox}<section><h2>${escapeHtml(result.headcode)}</h2>${renderRecord(result.sheet, result.columnIndex, result.points)}</section>`;
+            }
           )
           .join("")
       : headcode
@@ -117,7 +130,6 @@ export function renderPage({ headcode, results, error }) {
         <div class="nav">
           <a href="/" class="nav-link active">Lookup</a>
           <a href="/lineups" class="nav-link">Lineups</a>
-          <a href="/debug/chains" class="nav-link">Chains</a>
         </div>
         <h1>Timetable Lookup</h1>
         <p>Search for a headcode across WTT-UP and WTT-DOWN.</p>
@@ -282,7 +294,6 @@ export function renderLineupsIndex({ locations, error }) {
         <div class="nav">
           <a href="/" class="nav-link">Lookup</a>
           <a href="/lineups" class="nav-link active">Lineups</a>
-          <a href="/debug/chains" class="nav-link">Chains</a>
         </div>
         <h1>Lineups</h1>
         <p>Choose a timing point to see every arrival and departure.</p>
@@ -367,7 +378,11 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
                   const cells = visibleColumns
                     .map((column) => `<td>${column.render(entry)}</td>`)
                     .join("");
-                  return `<tr><th>${escapeHtml(entry.headcode)}</th>${cells}</tr>`;
+                  const rowClass = entry.departureStrikethrough ? ' class="strikethrough"' : '';
+                  const warningIcon = entry.headcodeNote 
+                    ? ` <span class="warning-icon" data-note="${escapeHtml(entry.headcodeNote)}" data-headcode="${escapeHtml(entry.headcode)}" title="Route change note">⚠️</span>`
+                    : '';
+                  return `<tr${rowClass}><th>${escapeHtml(entry.headcode)}${warningIcon}</th>${cells}</tr>`;
                 })
                 .join("")
             : `<tr><td colspan="${colSpan}" class="empty">No trains listed.</td></tr>`;
@@ -403,18 +418,60 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
         <div class="nav">
           <a href="/" class="nav-link">Lookup</a>
           <a href="/lineups" class="nav-link active">Lineups</a>
-          <a href="/debug/chains" class="nav-link">Chains</a>
         </div>
         <h1>${escapeHtml(location || "Lineup")}</h1>
         <p>All trains calling at this timing point, sorted by arrival (or departure).</p>
         <p><a href="${toggleUrl}" style="font-weight: 600;">${toggleText}</a></p>
       </header>
       ${content}
+      <div id="route-note-modal" class="modal" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true">
+          <h3 id="route-note-title">Route Change</h3>
+          <div id="route-note-content"></div>
+          <div class="modal-actions">
+            <button type="button" id="route-note-close">Close</button>
+          </div>
+        </div>
+      </div>
     `,
     script: `
+      const routeModal = document.getElementById("route-note-modal");
+      const routeTitle = document.getElementById("route-note-title");
+      const routeContent = document.getElementById("route-note-content");
+      const routeClose = document.getElementById("route-note-close");
+
+      document.addEventListener("click", (event) => {
+        const icon = event.target.closest(".warning-icon");
+        if (!icon) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        const headcode = icon.dataset.headcode || "";
+        const note = icon.dataset.note || "";
+        routeTitle.textContent = headcode ? headcode + " - Route Change" : "Route Change";
+        routeContent.textContent = note;
+        routeModal.classList.add("open");
+        routeModal.setAttribute("aria-hidden", "false");
+      });
+
+      routeClose.addEventListener("click", () => {
+        routeModal.classList.remove("open");
+        routeModal.setAttribute("aria-hidden", "true");
+      });
+
+      routeModal.addEventListener("click", (event) => {
+        if (event.target === routeModal) {
+          routeModal.classList.remove("open");
+          routeModal.setAttribute("aria-hidden", "true");
+        }
+      });
+
       if (window.location.pathname.startsWith('/lineups/')) {
         setInterval(() => {
-          window.location.reload();
+          if (!routeModal.classList.contains("open")) {
+            window.location.reload();
+          }
         }, 10000);
       }
     `,
@@ -556,6 +613,53 @@ function renderShell({ title, body, script }) {
       .editable:hover {
         background: #f7f2e3;
       }
+      .strikethrough {
+        text-decoration: line-through;
+        color: #9a9489;
+        opacity: 0.7;
+      }
+      .strikethrough th,
+      .strikethrough td {
+        text-decoration: line-through;
+        color: #9a9489;
+        opacity: 0.7;
+      }
+      .warning-icon {
+        display: inline-block;
+        cursor: pointer;
+        font-size: 0.9em;
+        margin-left: 6px;
+        opacity: 0.8;
+        transition: opacity 0.2s, transform 0.2s;
+      }
+      .warning-icon:hover {
+        opacity: 1;
+        transform: scale(1.15);
+      }
+      .route-change-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background: #fff4e6;
+        border: 2px solid #f59e0b;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      }
+      .route-change-icon {
+        font-size: 1.3em;
+        flex-shrink: 0;
+        line-height: 1;
+      }
+      .route-change-content {
+        flex: 1;
+        color: #92400e;
+        line-height: 1.5;
+      }
+      .route-change-content strong {
+        color: #78350f;
+      }
       .muted {
         color: #8a8272;
         font-weight: 500;
@@ -592,6 +696,15 @@ function renderShell({ title, body, script }) {
       .modal-card h3 {
         margin: 0 0 8px;
         font-size: 1.2rem;
+      }
+      .modal-card #route-note-content {
+        margin: 12px 0;
+        padding: 12px;
+        background: #f9f7f3;
+        border-radius: 8px;
+        color: #3b3a30;
+        line-height: 1.5;
+        white-space: pre-wrap;
       }
       .modal-card label {
         display: block;

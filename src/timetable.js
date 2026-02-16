@@ -33,6 +33,9 @@ export function buildTimingPointsForColumn(info, columnIndex) {
         arrivalRow: null,
         departureRow: null,
         platformRow: null,
+        arrivalStrikethrough: false,
+        departureStrikethrough: false,
+        platformStrikethrough: false,
       };
       points.push(current);
     }
@@ -45,14 +48,17 @@ export function buildTimingPointsForColumn(info, columnIndex) {
       current.arrival = value;
       current.arrivalNote = cell.note || "";
       current.arrivalRow = sheetRowIndex;
+      current.arrivalStrikethrough = cell.strikethrough || false;
     } else if (type === "dep") {
       current.departure = value;
       current.departureNote = cell.note || "";
       current.departureRow = sheetRowIndex;
+      current.departureStrikethrough = cell.strikethrough || false;
     } else if (type === "plt") {
       current.platform = value;
       current.platformNote = cell.note || "";
       current.platformRow = sheetRowIndex;
+      current.platformStrikethrough = cell.strikethrough || false;
     }
   });
 
@@ -91,7 +97,9 @@ export function filterByHeadcode(data, headcode) {
       anticipatedDelay: getAnticipatedDelayForHeadcode(delayContexts, sheet, target, point.location),
     }));
     
-    matches.push({ sheet, points: pointsWithAnticipatedDelay, columnIndex, headcode: target });
+    const headcodeNote = info.headerNotes?.[columnIndex] || "";
+    
+    matches.push({ sheet, points: pointsWithAnticipatedDelay, columnIndex, headcode: target, headcodeNote });
   }
 
   return matches;

@@ -1,4 +1,4 @@
-import { escapeHtml, formatMinutesToTime, parseTimeToMinutes } from "./utils.js";
+import { buildEstimatedTimingPoints, escapeHtml, formatHalfMinutesToTime, parseTimeToHalfMinutes } from "./utils.js";
 
 function renderCellDisplay(scheduledValue, noteValue) {
   const scheduled = String(scheduledValue || "").trim();
@@ -12,37 +12,39 @@ function renderCellDisplay(scheduledValue, noteValue) {
   return `${escapeHtml(note)} <span class="muted">(${escapeHtml(scheduled)})</span>`;
 }
 
-function renderCellDisplayWithEstimate(scheduledValue, noteValue, anticipatedDelay) {
+function renderCellDisplayWithEstimate(scheduledValue, noteValue, estimatedHalfMinutes) {
   const scheduled = String(scheduledValue || "").trim();
   const note = String(noteValue || "").trim();
+  const scheduledHalfMinutes = parseTimeToHalfMinutes(scheduled);
 
   if (!scheduled) {
     return renderCellDisplay(scheduledValue, noteValue);
   }
 
-  if (anticipatedDelay && anticipatedDelay !== 0) {
-    const scheduledMinutes = parseTimeToMinutes(scheduled);
-    if (scheduledMinutes !== null) {
-      const estimatedMinutes = scheduledMinutes + anticipatedDelay;
-      const estimatedTime = formatMinutesToTime(estimatedMinutes);
-      const estimateDisplay = `<span class="muted">(est. ${escapeHtml(estimatedTime)})</span>`;
+  if (
+    estimatedHalfMinutes !== null &&
+    estimatedHalfMinutes !== undefined &&
+    scheduledHalfMinutes !== null &&
+    estimatedHalfMinutes !== scheduledHalfMinutes
+  ) {
+    const estimatedTime = formatHalfMinutesToTime(estimatedHalfMinutes);
+    const estimateDisplay = `<span class="muted">(est. ${escapeHtml(estimatedTime)})</span>`;
 
-      if (!note) {
-        return `<strong>${escapeHtml(scheduled)}</strong> ${estimateDisplay}`;
-      }
-      if (note === scheduled) {
-        return `${escapeHtml(note)} ${estimateDisplay}`;
-      }
-      return `${escapeHtml(note)} <span class="muted">(${escapeHtml(scheduled)})</span> ${estimateDisplay}`;
+    if (!note) {
+      return `<strong>${escapeHtml(scheduled)}</strong> ${estimateDisplay}`;
     }
+    if (note === scheduled) {
+      return `${escapeHtml(note)} ${estimateDisplay}`;
+    }
+    return `${escapeHtml(note)} <span class="muted">(${escapeHtml(scheduled)})</span> ${estimateDisplay}`;
   }
 
   return renderCellDisplay(scheduledValue, noteValue);
 }
 
-function renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, anticipatedDelay, strikethrough = false) {
-  const display = anticipatedDelay && anticipatedDelay !== 0 
-    ? renderCellDisplayWithEstimate(value, note, anticipatedDelay)
+function renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, estimatedHalfMinutes, strikethrough = false) {
+  const display = estimatedHalfMinutes !== null && estimatedHalfMinutes !== undefined
+    ? renderCellDisplayWithEstimate(value, note, estimatedHalfMinutes)
     : renderCellDisplay(value, note);
   const safeValue = escapeHtml(value);
   const safeNote = escapeHtml(note);
@@ -54,13 +56,16 @@ function renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnInde
 }
 
 function renderEditableCell(value, note, sheet, rowIndex, columnIndex, type, strikethrough = false) {
-  return renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, 0, strikethrough);
+  return renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, null, strikethrough);
 }
 
 function renderRecord(sheet, columnIndex, points) {
+  const anticipatedDelay = points[0]?.anticipatedDelay || 0;
+  const estimatedPoints = buildEstimatedTimingPoints(points, anticipatedDelay);
   const rows = points
-    .map(
-      ({
+    .map((point, index) => {
+      const estimatedPoint = estimatedPoints[index];
+      const {
         location,
         platform,
         arrival,
@@ -71,18 +76,18 @@ function renderRecord(sheet, columnIndex, points) {
         platformRow,
         arrivalRow,
         departureRow,
-        anticipatedDelay,
         platformStrikethrough,
         arrivalStrikethrough,
         departureStrikethrough,
-      }) =>
-        `<tr>
+      } = point;
+
+      return `<tr>
           <th>${escapeHtml(location)}</th>
           ${renderEditableCell(platform, platformNote, sheet, platformRow, columnIndex, "plt", platformStrikethrough)}
-          ${renderEditableCellWithEstimate(arrival, arrivalNote, sheet, arrivalRow, columnIndex, "arr", anticipatedDelay, arrivalStrikethrough)}
-          ${renderEditableCellWithEstimate(departure, departureNote, sheet, departureRow, columnIndex, "dep", anticipatedDelay, departureStrikethrough)}
-        </tr>`
-    )
+          ${renderEditableCellWithEstimate(arrival, arrivalNote, sheet, arrivalRow, columnIndex, "arr", estimatedPoint.arrivalEstimatedUnits, arrivalStrikethrough)}
+          ${renderEditableCellWithEstimate(departure, departureNote, sheet, departureRow, columnIndex, "dep", estimatedPoint.departureEstimatedUnits, departureStrikethrough)}
+        </tr>`;
+    })
     .join("");
 
   return `
@@ -354,8 +359,8 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
                 (entry) =>
                   String(entry.arrival || "").trim() !== "" || String(entry.arrivalNote || "").trim() !== ""
               ),
-              render: (entry) => considerDelays
-                ? renderCellDisplayWithEstimate(entry.arrival, entry.arrivalNote, entry.anticipatedDelay)
+              render: (entry, estimatedEntry) => considerDelays
+                ? renderCellDisplayWithEstimate(entry.arrival, entry.arrivalNote, estimatedEntry?.arrivalEstimatedUnits)
                 : renderCellDisplay(entry.arrival, entry.arrivalNote),
             },
             {
@@ -365,8 +370,8 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
                 (entry) =>
                   String(entry.departure || "").trim() !== "" || String(entry.departureNote || "").trim() !== ""
               ),
-              render: (entry) => considerDelays
-                ? renderCellDisplayWithEstimate(entry.departure, entry.departureNote, entry.anticipatedDelay)
+              render: (entry, estimatedEntry) => considerDelays
+                ? renderCellDisplayWithEstimate(entry.departure, entry.departureNote, estimatedEntry?.departureEstimatedUnits)
                 : renderCellDisplay(entry.departure, entry.departureNote),
             },
           ];
@@ -375,8 +380,14 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
           const rows = entries.length
             ? entries
                 .map((entry) => {
+                  const estimatedEntry = considerDelays
+                    ? buildEstimatedTimingPoints(
+                        [{ arrival: entry.arrival, departure: entry.departure }],
+                        entry.anticipatedDelay || 0
+                      )[0]
+                    : null;
                   const cells = visibleColumns
-                    .map((column) => `<td>${column.render(entry)}</td>`)
+                    .map((column) => `<td>${column.render(entry, estimatedEntry)}</td>`)
                     .join("");
                   const rowClass = entry.departureStrikethrough ? ' class="strikethrough"' : '';
                   const warningIcon = entry.headcodeNote 

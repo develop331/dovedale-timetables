@@ -8,13 +8,14 @@ function findHeadcodeColumn(headers, target) {
 export function buildTimingPointsForColumn(info, columnIndex) {
   const points = [];
   let current = null;
+  const dataStartIndex = Number.isInteger(info.dataStartIndex) ? info.dataStartIndex : 1;
 
   info.rows.forEach((row, idx) => {
     const location = String(info.rowLabels[idx] || "").trim();
     const type = String(row[1]?.value || "").trim().toLowerCase();
     const cell = row[columnIndex] || { value: "", note: "" };
     const value = cell.value ?? "";
-    const sheetRowIndex = idx + 1;
+    const sheetRowIndex = dataStartIndex + idx;
 
     // Skip "Next" rows as they're service chain markers
     if (location.toLowerCase() === "next") {

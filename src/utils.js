@@ -25,11 +25,82 @@ export function parseTimeToMinutes(value) {
   return (hours % 24) * 60 + (minutes % 60);
 }
 
+export function parseTimeToHalfMinutes(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return null;
+  }
+
+  const halfMinute = /H/i.test(raw) ? 1 : 0;
+  const minutes = parseTimeToMinutes(raw);
+  if (minutes === null) {
+    return null;
+  }
+
+  return minutes * 2 + halfMinute;
+}
+
 export function formatMinutesToTime(totalMinutes) {
   const normalized = ((totalMinutes % 1440) + 1440) % 1440;
   const hours = Math.floor(normalized / 60);
   const minutes = normalized % 60;
   return `${String(hours).padStart(2, "0")}.${String(minutes).padStart(2, "0")}`;
+}
+
+export function formatHalfMinutesToTime(totalHalfMinutes) {
+  const normalized = ((totalHalfMinutes % 2880) + 2880) % 2880;
+  const hours = Math.floor(normalized / 120);
+  const minutes = Math.floor((normalized % 120) / 2);
+  const halfMinute = normalized % 2 === 1;
+  const time = `${String(hours).padStart(2, "0")}.${String(minutes).padStart(2, "0")}`;
+  return halfMinute ? `${time}H` : time;
+}
+
+export function buildEstimatedTimingPoints(points, anticipatedDelayMinutes = 0) {
+  const initialDelayUnits = Number.isFinite(anticipatedDelayMinutes) ? anticipatedDelayMinutes * 2 : 0;
+  let previousScheduledUnits = null;
+  let previousEstimatedUnits = null;
+
+  return points.map((point) => {
+    const arrivalScheduledUnits = parseTimeToHalfMinutes(point.arrival);
+    const departureScheduledUnits = parseTimeToHalfMinutes(point.departure);
+    let arrivalEstimatedUnits = null;
+    let departureEstimatedUnits = null;
+
+    if (arrivalScheduledUnits !== null) {
+      if (previousScheduledUnits === null || previousEstimatedUnits === null) {
+        arrivalEstimatedUnits = arrivalScheduledUnits + initialDelayUnits;
+      } else {
+        arrivalEstimatedUnits = previousEstimatedUnits + (arrivalScheduledUnits - previousScheduledUnits);
+      }
+      previousScheduledUnits = arrivalScheduledUnits;
+      previousEstimatedUnits = arrivalEstimatedUnits;
+    }
+
+    if (departureScheduledUnits !== null) {
+      if (arrivalScheduledUnits !== null && arrivalEstimatedUnits !== null) {
+        const dwellUnits = Math.max(0, departureScheduledUnits - arrivalScheduledUnits);
+        const cappedDwellUnits = Math.min(dwellUnits, 1);
+        departureEstimatedUnits = Math.max(
+          departureScheduledUnits,
+          arrivalEstimatedUnits + cappedDwellUnits
+        );
+      } else if (previousScheduledUnits !== null && previousEstimatedUnits !== null) {
+        departureEstimatedUnits = previousEstimatedUnits + (departureScheduledUnits - previousScheduledUnits);
+      } else {
+        departureEstimatedUnits = departureScheduledUnits + initialDelayUnits;
+      }
+
+      previousScheduledUnits = departureScheduledUnits;
+      previousEstimatedUnits = departureEstimatedUnits;
+    }
+
+    return {
+      ...point,
+      arrivalEstimatedUnits,
+      departureEstimatedUnits,
+    };
+  });
 }
 
 export function buildNoteFromActual(scheduled, actualInput, type) {

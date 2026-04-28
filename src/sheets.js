@@ -72,22 +72,37 @@ export async function getSheetIdMap() {
   return map;
 }
 
+function findDataStartIndex(rowData) {
+  const validTypes = new Set(["arr", "dep", "plt", "pth", "lne"]);
+
+  for (let rowIndex = 0; rowIndex < rowData.length; rowIndex += 1) {
+    const values = rowData[rowIndex]?.values || [];
+    const type = String(values[1]?.formattedValue || "").trim().toLowerCase();
+    if (validTypes.has(type)) {
+      return rowIndex;
+    }
+  }
+
+  return 1;
+}
+
 export function buildSheetLayout(sheets) {
   if (!sheets.length || !sheets[0].data || !sheets[0].data.length) {
-    return { headers: [], headerNotes: [], rowLabels: [], rows: [] };
+    return { headers: [], headerNotes: [], rowLabels: [], rows: [], dataStartIndex: 0 };
   }
 
   const rowData = sheets[0].data[0].rowData || [];
   if (rowData.length === 0) {
-    return { headers: [], headerNotes: [], rowLabels: [], rows: [] };
+    return { headers: [], headerNotes: [], rowLabels: [], rows: [], dataStartIndex: 0 };
   }
 
   const headerRow = rowData[0].values || [];
   const headers = headerRow.map((cell) => String(cell.formattedValue || "").trim());
   const headerNotes = headerRow.map((cell) => String(cell.note || "").trim());
   const maxCols = headers.length;
+  const dataStartIndex = findDataStartIndex(rowData);
 
-  const rows = rowData.slice(1).map((row) => {
+  const rows = rowData.slice(dataStartIndex).map((row) => {
     const cells = row.values || [];
     const rowCells = [];
     for (let i = 0; i < maxCols; i += 1) {
@@ -103,7 +118,7 @@ export function buildSheetLayout(sheets) {
   });
 
   const rowLabels = rows.map((row) => String(row[0]?.value || "").trim());
-  return { headers, headerNotes, rowLabels, rows };
+  return { headers, headerNotes, rowLabels, rows, dataStartIndex };
 }
 
 export async function loadData() {

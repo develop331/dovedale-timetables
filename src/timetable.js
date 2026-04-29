@@ -1,8 +1,28 @@
 import { normalizeHeadcode } from "./utils.js";
-import { buildDelayHistory, buildLineups, getAnticipatedDelayForHeadcode } from "./lineups.js";
+import { buildLineups, getAnticipatedDelayForHeadcode, getDelayContexts } from "./lineups.js";
+import { parseTimeToHalfMinutes } from "./utils.js";
 
 function findHeadcodeColumn(headers, target) {
   return headers.findIndex((header) => normalizeHeadcode(header) === target);
+}
+
+function getDutyFromHeadcode(headcode) {
+  const normalized = normalizeHeadcode(headcode);
+  return normalized.length >= 3 ? normalized.charAt(2) : "";
+}
+
+function getServiceSortKey(points) {
+  let best = null;
+  points.forEach((point) => {
+    const candidate = parseTimeToHalfMinutes(point.arrival || point.departure || "");
+    if (candidate === null) {
+      return;
+    }
+    if (best === null || candidate < best) {
+      best = candidate;
+    }
+  });
+  return best;
 }
 
 export function buildTimingPointsForColumn(info, columnIndex) {
@@ -78,10 +98,7 @@ export function filterByHeadcode(data, headcode) {
   }
 
   // Build delay contexts to calculate anticipated delays
-  const delayContexts = {};
-  for (const [sheet, info] of Object.entries(data)) {
-    delayContexts[sheet] = buildDelayHistory(info);
-  }
+  const delayContexts = getDelayContexts(data);
 
   const matches = [];
   for (const [sheet, info] of Object.entries(data)) {
@@ -100,8 +117,67 @@ export function filterByHeadcode(data, headcode) {
     
     const headcodeNote = info.headerNotes?.[columnIndex] || "";
     
-    matches.push({ sheet, points: pointsWithAnticipatedDelay, columnIndex, headcode: target, headcodeNote });
+    matches.push({
+      sheet,
+      points: pointsWithAnticipatedDelay,
+      columnIndex,
+      headcode: target,
+      headcodeNote,
+      serviceMeta: info.serviceMeta?.[columnIndex] || null,
+    });
   }
 
   return matches;
+}
+
+export function filterByDuty(data, duty) {
+  const target = String(duty || "").trim().charAt(0);
+  if (!target) {
+    return [];
+  }
+
+  const delayContexts = getDelayContexts(data);
+
+  const matches = [];
+  for (const [sheet, info] of Object.entries(data)) {
+    info.headers.forEach((header, columnIndex) => {
+      const headcode = normalizeHeadcode(header);
+      if (!headcode || getDutyFromHeadcode(headcode) !== target) {
+        return;
+      }
+
+      const points = buildTimingPointsForColumn(info, columnIndex);
+      const pointsWithAnticipatedDelay = points.map((point) => ({
+        ...point,
+        anticipatedDelay: getAnticipatedDelayForHeadcode(delayContexts, sheet, headcode, point.location),
+      }));
+
+      matches.push({
+        sheet,
+        points: pointsWithAnticipatedDelay,
+        columnIndex,
+        headcode,
+        duty: target,
+        headcodeNote: info.headerNotes?.[columnIndex] || "",
+        serviceMeta: info.serviceMeta?.[columnIndex] || null,
+        sortKey: getServiceSortKey(pointsWithAnticipatedDelay),
+      });
+    });
+  }
+
+  return matches.sort((a, b) => {
+    if (a.sortKey === null && b.sortKey === null) {
+      return a.headcode.localeCompare(b.headcode);
+    }
+    if (a.sortKey === null) {
+      return 1;
+    }
+    if (b.sortKey === null) {
+      return -1;
+    }
+    if (a.sortKey !== b.sortKey) {
+      return a.sortKey - b.sortKey;
+    }
+    return a.headcode.localeCompare(b.headcode);
+  });
 }

@@ -1,9 +1,9 @@
 import { SHEET_ID } from "./config.js";
-import { buildLineups, buildDelayHistory } from "./lineups.js";
-import { renderLineupPage, renderLineupsIndex, renderPage } from "./render.js";
+import { buildLineups } from "./lineups.js";
+import { renderDutyPage, renderLineupPage, renderLineupsIndex, renderPage } from "./render.js";
 import { getSheetIdMap, getSheetsClient, loadData, resetCache } from "./sheets.js";
-import { filterByHeadcode } from "./timetable.js";
-import { buildNoteFromActual, getDelayStyle, escapeHtml, normalizeHeadcode } from "./utils.js";
+import { filterByDuty, filterByHeadcode } from "./timetable.js";
+import { buildNoteFromActual, getDelayStyle } from "./utils.js";
 
 export function registerRoutes(app) {
   app.post("/note", async (req, res) => {
@@ -143,6 +143,36 @@ export function registerRoutes(app) {
       res
         .type("html")
         .send(renderLineupPage({ location, combined: {}, considerDelays, error: message }));
+    }
+  });
+
+  app.get("/duties", async (req, res) => {
+    const duty = typeof req.query.duty === "string" ? req.query.duty : "";
+    let results = [];
+    let error = "";
+
+    if (duty) {
+      try {
+        const data = await loadData();
+        results = filterByDuty(data, duty);
+      } catch (err) {
+        error = err instanceof Error ? err.message : "Unexpected error";
+      }
+    }
+
+    res.type("html").send(renderDutyPage({ duty, results, error }));
+  });
+
+  app.get("/duties/:duty", async (req, res) => {
+    const duty = typeof req.params.duty === "string" ? req.params.duty : "";
+
+    try {
+      const data = await loadData();
+      const results = filterByDuty(data, duty);
+      res.type("html").send(renderDutyPage({ duty, results, error: "" }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unexpected error";
+      res.type("html").send(renderDutyPage({ duty, results: [], error: message }));
     }
   });
 }

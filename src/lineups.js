@@ -1,6 +1,8 @@
 import { buildEstimatedTimingPoints, parseDelayFromNote, parseTimeToHalfMinutes } from "./utils.js";
 
 const MAX_CHAIN_STOP_HALF_MINUTES = 4;
+const delayContextCache = new WeakMap();
+const lineupsCache = new WeakMap();
 
 function buildLineupsForSheet(info) {
   const lineups = new Map();
@@ -83,7 +85,7 @@ function buildLineupsForSheet(info) {
 }
 
 function getLineupSortKey(entry, considerDelays = false) {
-  const time = entry.arrival || entry.departure || "";
+  const time = entry.departure || entry.arrival || "";
   const parsed = parseTimeToHalfMinutes(time);
   if (parsed === null) {
     return null;
@@ -295,6 +297,63 @@ function getEstimatedHeadcodeTimeAtLocation(context, headcode, targetLocation, b
   return null;
 }
 
+function getScheduledTimeForHeadcodeLocation(timings, headcode, location) {
+  const timing = timings?.[headcode]?.[location];
+  if (!timing) {
+    return null;
+  }
+  return timing.dep ?? timing.arr ?? null;
+}
+
+function getBestKnownDelayForHeadcode(delayHistory, timings, headcode, targetLocation, locationOrder, locationIndices) {
+  const headcodeHistory = delayHistory[headcode];
+  if (!headcodeHistory) {
+    return null;
+  }
+
+  const targetTime = getScheduledTimeForHeadcodeLocation(timings, headcode, targetLocation);
+  if (targetTime !== null && targetTime !== undefined) {
+    let bestDelay = null;
+    let bestDelta = null;
+
+    for (const [location, delay] of Object.entries(headcodeHistory)) {
+      const sourceTime = getScheduledTimeForHeadcodeLocation(timings, headcode, location);
+      if (sourceTime === null || sourceTime === undefined) {
+        continue;
+      }
+
+      // Normalize to a forward-moving clock to handle row ordering that is not chronological.
+      let delta = targetTime - sourceTime;
+      if (delta < 0) {
+        delta += 24 * 120;
+      }
+
+      if (bestDelta === null || delta < bestDelta) {
+        bestDelta = delta;
+        bestDelay = delay;
+      }
+    }
+
+    if (bestDelay !== null) {
+      return bestDelay;
+    }
+  }
+
+  // Fallback to legacy row-order search if timing data is incomplete.
+  const targetIdx = locationIndices[targetLocation];
+  if (targetIdx === undefined || targetIdx < 0) {
+    return null;
+  }
+  for (let i = targetIdx; i >= 0; i -= 1) {
+    const location = locationOrder[i];
+    if (headcodeHistory[location] !== undefined) {
+      return headcodeHistory[location];
+    }
+  }
+
+  return null;
+}
+
 function applyInterHeadcodeStopRule(prevContext, prevHeadcode, previousDelayMinutes, nextContext, nextHeadcode) {
   if (!Number.isFinite(previousDelayMinutes) || previousDelayMinutes <= 0) {
     return previousDelayMinutes;
@@ -323,13 +382,11 @@ function applyInterHeadcodeStopRule(prevContext, prevHeadcode, previousDelayMinu
 
 function getPreviousHeadcodeAtLocation(headcodeChain, targetHeadcode, targetLocation, locationOrder, locationIndices) {
   const targetIdx = locationIndices[targetLocation];
-  console.log(`[getPreviousHeadcodeAtLocation] Looking for previous service that becomes ${targetHeadcode} at/before ${targetLocation} (idx: ${targetIdx})`);
-  
+
   // First try exact match at this location
   for (const [prevHeadcode, transitions] of Object.entries(headcodeChain)) {
     for (const transition of transitions) {
       if (transition.location === targetLocation && transition.nextHeadcode === targetHeadcode) {
-        console.log(`[getPreviousHeadcodeAtLocation] EXACT MATCH! ${prevHeadcode} -> ${targetHeadcode} at ${targetLocation}`);
         return prevHeadcode;
       }
     }
@@ -342,7 +399,6 @@ function getPreviousHeadcodeAtLocation(headcodeChain, targetHeadcode, targetLoca
       for (const [prevHeadcode, transitions] of Object.entries(headcodeChain)) {
         for (const transition of transitions) {
           if (transition.location === location && transition.nextHeadcode === targetHeadcode) {
-            console.log(`[getPreviousHeadcodeAtLocation] BACKWARD MATCH! ${prevHeadcode} -> ${targetHeadcode} at ${location} (before ${targetLocation})`);
             return prevHeadcode;
           }
         }
@@ -357,15 +413,13 @@ function getPreviousHeadcodeAtLocation(headcodeChain, targetHeadcode, targetLoca
       for (const [prevHeadcode, transitions] of Object.entries(headcodeChain)) {
         for (const transition of transitions) {
           if (transition.location === location && transition.nextHeadcode === targetHeadcode) {
-            console.log(`[getPreviousHeadcodeAtLocation] FORWARD MATCH! ${prevHeadcode} -> ${targetHeadcode} at ${location} (after ${targetLocation})`);
             return prevHeadcode;
           }
         }
       }
     }
   }
-  
-  console.log(`[getPreviousHeadcodeAtLocation] No previous service found for ${targetHeadcode}`);
+
   return null;
 }
 
@@ -383,16 +437,17 @@ function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headc
   }
   visited.add(visitKey);
 
-  console.log(`[getAnticipatedDelay] Looking for delays for ${headcode} at ${targetLocation}`);
-
-  // First, try to find a delay recorded for the current headcode at or before the target location
-  for (let i = targetIdx; i >= 0; i -= 1) {
-    const location = locationOrder[i];
-    const headcodeHistory = delayHistory[currentHeadcode];
-    if (headcodeHistory && headcodeHistory[location] !== undefined) {
-      console.log(`[getAnticipatedDelay] Found delay for ${currentHeadcode} at ${location}: ${headcodeHistory[location]}`);
-      return headcodeHistory[location];
-    }
+  // First, try to find a delay recorded for the current headcode, using timing order when available.
+  const knownDelay = getBestKnownDelayForHeadcode(
+    delayHistory,
+    timings,
+    currentHeadcode,
+    targetLocation,
+    locationOrder,
+    locationIndices
+  );
+  if (knownDelay !== null) {
+    return knownDelay;
   }
 
   // If no delay found for current headcode, look for the previous service in the chain
@@ -401,7 +456,6 @@ function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headc
     const location = locationOrder[i];
     const prevHeadcode = getPreviousHeadcodeAtLocation(headcodeChain, currentHeadcode, location, locationOrder, locationIndices);
     if (prevHeadcode) {
-      console.log(`[getAnticipatedDelay] Found chain: ${prevHeadcode} -> ${currentHeadcode} at ${location}`);
       // Recursively get the anticipated delay for the previous service
       // This handles multi-hop chains like 5F10 -> 2C11 -> 2A11
       const prevDelay = getAnticipatedDelay(
@@ -436,13 +490,11 @@ function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headc
 
   // Cross-sheet chain check: Look in other sheets for a headcode that chains TO this one
   if (Object.keys(allDelayContexts).length > 0) {
-    console.log(`[getAnticipatedDelay] Checking other sheets for chains TO ${currentHeadcode}`);
     for (const [sheetName, context] of Object.entries(allDelayContexts)) {
       // Look for ANY headcode in this sheet that chains to currentHeadcode
       for (const [prevHeadcode, transitions] of Object.entries(context.headcodeChain)) {
         for (const transition of transitions) {
           if (transition.nextHeadcode === currentHeadcode) {
-            console.log(`[getAnticipatedDelay] Found cross-sheet chain: ${prevHeadcode} (${sheetName}) → ${currentHeadcode}`);
             // Now check if that previous headcode has delays
             const inheritedDelay = getAnticipatedDelay(
               context.history,
@@ -464,9 +516,6 @@ function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headc
                 { locationOrder, locationIndices, timings },
                 currentHeadcode
               );
-              console.log(
-                `[getAnticipatedDelay] Using cross-sheet delay ${inheritedDelay} from ${prevHeadcode} (${sheetName}) -> ${currentHeadcode} (${activeSheet || "current"}) as ${adjustedDelay}`
-              );
               return adjustedDelay;
             }
           }
@@ -475,19 +524,36 @@ function getAnticipatedDelay(delayHistory, locationOrder, locationIndices, headc
     }
   }
 
-  console.log(`[getAnticipatedDelay] No delay found for ${headcode} at ${targetLocation}`);
   return 0;
 }
 
-export function buildLineups(data, considerDelays = false) {
-  const locations = new Set();
-  const sheets = {};
-  const combined = {};
-  const delayContexts = {};
+export function getDelayContexts(data) {
+  if (delayContextCache.has(data)) {
+    return delayContextCache.get(data);
+  }
 
+  const delayContexts = {};
   for (const [sheet, info] of Object.entries(data)) {
     delayContexts[sheet] = buildDelayHistory(info);
   }
+
+  delayContextCache.set(data, delayContexts);
+  return delayContexts;
+}
+
+export function buildLineups(data, considerDelays = false) {
+  let cachedResults = lineupsCache.get(data);
+  if (!cachedResults) {
+    cachedResults = new Map();
+    lineupsCache.set(data, cachedResults);
+  } else if (cachedResults.has(considerDelays)) {
+    return cachedResults.get(considerDelays);
+  }
+
+  const locations = new Set();
+  const sheets = {};
+  const combined = {};
+  const delayContexts = getDelayContexts(data);
 
   for (const [sheet, info] of Object.entries(data)) {
     const sheetLineups = buildLineupsForSheet(info);
@@ -531,6 +597,15 @@ export function buildLineups(data, considerDelays = false) {
           anticipatedDelay,
           estimatedArrivalUnits: estimatedEntry?.arrivalEstimatedUnits ?? null,
           estimatedDepartureUnits: estimatedEntry?.departureEstimatedUnits ?? null,
+          sortKeyUnits: getLineupSortKey(
+            {
+              ...entry,
+              anticipatedDelay,
+              estimatedArrivalUnits: estimatedEntry?.arrivalEstimatedUnits ?? null,
+              estimatedDepartureUnits: estimatedEntry?.departureEstimatedUnits ?? null,
+            },
+            considerDelays
+          ),
         });
       });
     });

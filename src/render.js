@@ -59,10 +59,37 @@ function renderEditableCell(value, note, sheet, rowIndex, columnIndex, type, str
   return renderEditableCellWithEstimate(value, note, sheet, rowIndex, columnIndex, type, null, strikethrough);
 }
 
+function getPointSortUnits(point) {
+  const departure = parseTimeToHalfMinutes(point.departure || "");
+  if (departure !== null) {
+    return departure;
+  }
+  return parseTimeToHalfMinutes(point.arrival || "");
+}
+
 function renderRecord(sheet, columnIndex, points) {
-  const anticipatedDelay = points[0]?.anticipatedDelay || 0;
-  const estimatedPoints = buildEstimatedTimingPoints(points, anticipatedDelay);
-  const rows = points
+  const orderedPoints = points
+    .map((point, index) => ({ point, index, sortUnits: getPointSortUnits(point) }))
+    .sort((a, b) => {
+      if (a.sortUnits === null && b.sortUnits === null) {
+        return a.index - b.index;
+      }
+      if (a.sortUnits === null) {
+        return 1;
+      }
+      if (b.sortUnits === null) {
+        return -1;
+      }
+      if (a.sortUnits !== b.sortUnits) {
+        return a.sortUnits - b.sortUnits;
+      }
+      return a.index - b.index;
+    })
+    .map((entry) => entry.point);
+
+  const anticipatedDelay = orderedPoints[0]?.anticipatedDelay || 0;
+  const estimatedPoints = buildEstimatedTimingPoints(orderedPoints, anticipatedDelay);
+  const rows = orderedPoints
     .map((point, index) => {
       const estimatedPoint = estimatedPoints[index];
       const {
@@ -105,50 +132,43 @@ function renderRecord(sheet, columnIndex, points) {
   `;
 }
 
-export function renderPage({ headcode, results, error }) {
-  const resultHtml = error
-    ? `<div class="alert">${escapeHtml(error)}</div>`
-    : results.length
-      ? results
-          .map(
-            (result) => {
-              const routeChangeBox = result.headcodeNote
-                ? `<div class="route-change-box">
-                     <div class="route-change-icon">⚠️</div>
-                     <div class="route-change-content">
-                       <strong>Route Change:</strong> ${escapeHtml(result.headcodeNote)}
-                     </div>
-                   </div>`
-                : '';
-              return `${routeChangeBox}<section><h2>${escapeHtml(result.headcode)}</h2>${renderRecord(result.sheet, result.columnIndex, result.points)}</section>`;
-            }
-          )
-          .join("")
-      : headcode
-        ? "<p class=\"empty\">No matching headcode found.</p>"
-        : "<p class=\"empty\">Enter a headcode to see the timetable.</p>";
+function renderServiceSections(results) {
+  return results
+    .map(
+      (result) => {
+        const meta = result.serviceMeta || {};
+        const metaItems = [
+          ["Source", meta.source],
+          ["Train", meta.train],
+          ["From", meta.from],
+          ["UP/DN", meta.direction],
+          ["To", meta.to],
+          ["Description", meta.description],
+        ].filter(([, value]) => String(value || "").trim() !== "");
+        const metaHtml = metaItems.length
+          ? `<div class="service-meta">${metaItems
+              .map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+              .join("")}</div>`
+          : "";
+        const routeChangeBox = result.headcodeNote
+          ? `<div class="route-change-box">
+               <div class="route-change-icon">⚠️</div>
+               <div class="route-change-content">
+                 <strong>Route Change:</strong> ${escapeHtml(result.headcodeNote)}
+               </div>
+             </div>`
+          : "";
+        const title = result.duty !== undefined && result.duty !== null
+          ? `${escapeHtml(result.headcode)} <span class="muted">(Duty ${escapeHtml(result.duty)})</span>`
+          : escapeHtml(result.headcode);
+        return `${routeChangeBox}<section><h2>${title}</h2>${metaHtml}${renderRecord(result.sheet, result.columnIndex, result.points)}</section>`;
+      }
+    )
+    .join("");
+}
 
-  return renderShell({
-    title: "Timetable Lookup",
-    body: `
-      <header>
-        <div class="nav">
-          <a href="/" class="nav-link active">Lookup</a>
-          <a href="/lineups" class="nav-link">Lineups</a>
-        </div>
-        <h1>Timetable Lookup</h1>
-        <p>Search for a headcode across WTT-UP and WTT-DOWN.</p>
-        <p class="legend">Click a platform/arrival/departure cell to add an actual time (or OT) or actual platform.</p>
-      </header>
-      <form method="get" action="/">
-        <input
-          name="headcode"
-          type="text"
-          placeholder="Enter headcode"
-          value="${escapeHtml(headcode || "")}" />
-        <button type="submit">Search</button>
-      </form>
-      ${resultHtml}
+function renderNoteModal() {
+  return `
       <div id="note-modal" class="modal" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true">
           <h3>Add delay note</h3>
@@ -164,8 +184,11 @@ export function renderPage({ headcode, results, error }) {
           </form>
         </div>
       </div>
-    `,
-    script: `
+  `;
+}
+
+function renderNoteScript(refreshWhenQueryKeyExists = "headcode") {
+  return `
       const params = new URLSearchParams(window.location.search);
       const modal = document.getElementById("note-modal");
       const form = document.getElementById("note-form");
@@ -175,7 +198,7 @@ export function renderPage({ headcode, results, error }) {
       const cancel = document.getElementById("note-cancel");
       let activeCell = null;
 
-      if (params.get("headcode")) {
+      if (params.get("${refreshWhenQueryKeyExists}")) {
         setInterval(() => {
           if (!modal.classList.contains("open")) {
             window.location.reload();
@@ -188,7 +211,7 @@ export function renderPage({ headcode, results, error }) {
         modal.setAttribute("aria-hidden", "true");
         status.textContent = "";
         activeCell = null;
-        if (refresh && params.get("headcode")) {
+        if (refresh && params.get("${refreshWhenQueryKeyExists}")) {
           window.location.reload();
         }
       };
@@ -270,6 +293,84 @@ export function renderPage({ headcode, results, error }) {
           status.textContent = "Failed to save note.";
         }
       });
+  `;
+}
+
+export function renderPage({ headcode, results, error }) {
+  const resultHtml = error
+    ? `<div class="alert">${escapeHtml(error)}</div>`
+    : results.length
+      ? renderServiceSections(results)
+      : headcode
+        ? "<p class=\"empty\">No matching headcode found.</p>"
+        : "<p class=\"empty\">Enter a headcode to see the timetable.</p>";
+
+  return renderShell({
+    title: "Timetable Lookup",
+    body: `
+      <header>
+        <div class="nav">
+          <a href="/" class="nav-link active">Lookup</a>
+          <a href="/duties" class="nav-link">Duties</a>
+          <a href="/lineups" class="nav-link">Lineups</a>
+        </div>
+        <h1>Timetable Lookup</h1>
+        <p>Search for a headcode across WTT-UP and WTT-DOWN.</p>
+        <p class="legend">Click a platform/arrival/departure cell to add an actual time (or OT) or actual platform.</p>
+      </header>
+      <form method="get" action="/">
+        <input
+          name="headcode"
+          type="text"
+          placeholder="Enter headcode"
+          value="${escapeHtml(headcode || "")}" />
+        <button type="submit">Search</button>
+      </form>
+      ${resultHtml}
+      ${renderNoteModal()}
+    `,
+    script: renderNoteScript("headcode"),
+  });
+}
+
+export function renderDutyPage({ duty, results, error }) {
+  const resultHtml = error
+    ? `<div class="alert">${escapeHtml(error)}</div>`
+    : results.length
+      ? renderServiceSections(results)
+      : duty
+        ? "<p class=\"empty\">No matching services found for this duty.</p>"
+        : "<p class=\"empty\">Enter a duty number to see the services for that duty.</p>";
+
+  return renderShell({
+    title: "Duty View",
+    body: `
+      <header>
+        <div class="nav">
+          <a href="/" class="nav-link">Lookup</a>
+          <a href="/duties" class="nav-link active">Duties</a>
+          <a href="/lineups" class="nav-link">Lineups</a>
+        </div>
+        <h1>Duty View</h1>
+        <p>Enter the duty number from the third character of a headcode to see every service booked on that duty.</p>
+      </header>
+      <form method="get" action="/duties">
+        <input
+          name="duty"
+          type="text"
+          inputmode="numeric"
+          maxlength="1"
+          placeholder="Duty number, e.g. 1"
+          value="${escapeHtml(duty || "")}" />
+        <button type="submit">Show duty</button>
+      </form>
+      ${resultHtml}
+      ${renderNoteModal()}
+    `,
+    script: `${renderNoteScript("duty")}
+      setInterval(() => {
+        window.location.reload();
+      }, 10000);
     `,
   });
 }
@@ -298,6 +399,7 @@ export function renderLineupsIndex({ locations, error }) {
       <header>
         <div class="nav">
           <a href="/" class="nav-link">Lookup</a>
+          <a href="/duties" class="nav-link">Duties</a>
           <a href="/lineups" class="nav-link active">Lineups</a>
         </div>
         <h1>Lineups</h1>
@@ -390,10 +492,11 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
                     .map((column) => `<td>${column.render(entry, estimatedEntry)}</td>`)
                     .join("");
                   const rowClass = entry.departureStrikethrough ? ' class="strikethrough"' : '';
+                    const sortKey = Number.isFinite(entry.sortKeyUnits) ? entry.sortKeyUnits : "";
                   const warningIcon = entry.headcodeNote 
                     ? ` <span class="warning-icon" data-note="${escapeHtml(entry.headcodeNote)}" data-headcode="${escapeHtml(entry.headcode)}" title="Route change note">⚠️</span>`
                     : '';
-                  return `<tr${rowClass}><th>${escapeHtml(entry.headcode)}${warningIcon}</th>${cells}</tr>`;
+                    return `<tr${rowClass} data-sort-key="${sortKey}"><th>${escapeHtml(entry.headcode)}${warningIcon}</th>${cells}</tr>`;
                 })
                 .join("")
             : `<tr><td colspan="${colSpan}" class="empty">No trains listed.</td></tr>`;
@@ -428,6 +531,7 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
       <header>
         <div class="nav">
           <a href="/" class="nav-link">Lookup</a>
+          <a href="/duties" class="nav-link">Duties</a>
           <a href="/lineups" class="nav-link active">Lineups</a>
         </div>
         <h1>${escapeHtml(location || "Lineup")}</h1>
@@ -450,6 +554,46 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
       const routeTitle = document.getElementById("route-note-title");
       const routeContent = document.getElementById("route-note-content");
       const routeClose = document.getElementById("route-note-close");
+
+      function parseCurrentTimeUnits() {
+        const now = new Date();
+        return (now.getHours() * 60 + now.getMinutes()) * 2 + (now.getSeconds() >= 30 ? 1 : 0);
+      }
+
+      function insertNowMarker() {
+        document.querySelectorAll("table").forEach((table) => {
+          const body = table.querySelector("tbody");
+          if (!body) {
+            return;
+          }
+
+          const existingMarker = body.querySelector("tr.now-marker");
+          if (existingMarker) {
+            existingMarker.remove();
+          }
+
+          const rows = Array.from(body.querySelectorAll("tr:not(.now-marker)"));
+          const currentTimeUnits = parseCurrentTimeUnits();
+          const marker = document.createElement("tr");
+          marker.className = "now-marker";
+          marker.innerHTML = '<td colspan="' + table.querySelectorAll("thead th").length + '"><span aria-hidden="true"></span></td>';
+
+          let insertBefore = null;
+          for (const row of rows) {
+            const sortKey = Number(row.dataset.sortKey);
+            if (Number.isFinite(sortKey) && sortKey >= currentTimeUnits) {
+              insertBefore = row;
+              break;
+            }
+          }
+
+          if (insertBefore) {
+            body.insertBefore(marker, insertBefore);
+          } else {
+            body.appendChild(marker);
+          }
+        });
+      }
 
       document.addEventListener("click", (event) => {
         const icon = event.target.closest(".warning-icon");
@@ -477,6 +621,9 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
           routeModal.setAttribute("aria-hidden", "true");
         }
       });
+
+      insertNowMarker();
+      setInterval(insertNowMarker, 30000);
 
       if (window.location.pathname.startsWith('/lineups/')) {
         setInterval(() => {
@@ -555,6 +702,30 @@ function renderShell({ title, body, script }) {
         padding: 18px 20px;
         margin-bottom: 18px;
         box-shadow: 0 10px 20px rgba(50, 45, 30, 0.08);
+      }
+      .service-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 10px;
+        margin: 0 0 14px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #f8f4e8;
+        border: 1px solid #e7dfc7;
+      }
+      .service-meta span {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #756d5f;
+        margin-bottom: 2px;
+      }
+      .service-meta strong {
+        display: block;
+        font-size: 0.98rem;
+        color: #2f2b24;
       }
       table {
         width: 100%;
@@ -646,6 +817,35 @@ function renderShell({ title, body, script }) {
       .warning-icon:hover {
         opacity: 1;
         transform: scale(1.15);
+      }
+      .now-marker td {
+        padding: 0;
+        border-bottom: none;
+      }
+      .now-marker td span {
+        display: block;
+        position: relative;
+        padding: 8px 0;
+      }
+      .now-marker td span::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        border-top: 3px solid #d11f2d;
+        transform: translateY(-50%);
+        z-index: 0;
+      }
+      .now-marker td span::after {
+        content: "Now";
+        position: relative;
+        z-index: 1;
+        background: #fff6f6;
+        padding: 0 10px;
+        margin-left: 14px;
+        border-radius: 999px;
+        box-shadow: 0 0 0 2px #fff6f6;
       }
       .route-change-box {
         display: flex;

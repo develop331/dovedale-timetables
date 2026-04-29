@@ -86,14 +86,57 @@ function findDataStartIndex(rowData) {
   return 1;
 }
 
+function extractServiceMeta(rowData, headers, dataStartIndex) {
+  const serviceMeta = headers.map(() => ({ source: "", train: "", from: "", direction: "", to: "", description: "" }));
+
+  for (let rowIndex = 1; rowIndex < dataStartIndex && rowIndex < rowData.length; rowIndex += 1) {
+    const row = rowData[rowIndex] || {};
+    const values = row.values || [];
+    const label = String(values[0]?.formattedValue || "").trim().toLowerCase();
+    if (!label) {
+      continue;
+    }
+
+    if (label === "up" || label === "down") {
+      headers.forEach((_, columnIndex) => {
+        if (columnIndex >= 2) {
+          serviceMeta[columnIndex].direction = label.toUpperCase();
+        }
+      });
+      continue;
+    }
+
+    const keyMap = {
+      source: "source",
+      train: "train",
+      from: "from",
+      to: "to",
+      description: "description",
+    };
+    const key = keyMap[label];
+    if (!key) {
+      continue;
+    }
+
+    for (let columnIndex = 2; columnIndex < headers.length; columnIndex += 1) {
+      const value = String(values[columnIndex]?.formattedValue || "").trim();
+      if (value) {
+        serviceMeta[columnIndex][key] = value;
+      }
+    }
+  }
+
+  return serviceMeta;
+}
+
 export function buildSheetLayout(sheets) {
   if (!sheets.length || !sheets[0].data || !sheets[0].data.length) {
-    return { headers: [], headerNotes: [], rowLabels: [], rows: [], dataStartIndex: 0 };
+    return { headers: [], headerNotes: [], rowLabels: [], rows: [], dataStartIndex: 0, serviceMeta: [] };
   }
 
   const rowData = sheets[0].data[0].rowData || [];
   if (rowData.length === 0) {
-    return { headers: [], headerNotes: [], rowLabels: [], rows: [], dataStartIndex: 0 };
+    return { headers: [], headerNotes: [], rowLabels: [], rows: [], dataStartIndex: 0, serviceMeta: [] };
   }
 
   const headerRow = rowData[0].values || [];
@@ -101,6 +144,7 @@ export function buildSheetLayout(sheets) {
   const headerNotes = headerRow.map((cell) => String(cell.note || "").trim());
   const maxCols = headers.length;
   const dataStartIndex = findDataStartIndex(rowData);
+  const serviceMeta = extractServiceMeta(rowData, headers, dataStartIndex);
 
   const rows = rowData.slice(dataStartIndex).map((row) => {
     const cells = row.values || [];
@@ -118,7 +162,7 @@ export function buildSheetLayout(sheets) {
   });
 
   const rowLabels = rows.map((row) => String(row[0]?.value || "").trim());
-  return { headers, headerNotes, rowLabels, rows, dataStartIndex };
+  return { headers, headerNotes, rowLabels, rows, dataStartIndex, serviceMeta };
 }
 
 export async function loadData() {
@@ -133,12 +177,11 @@ export async function loadData() {
     throw new Error(`Unable to read credentials.json: ${reason}`);
   }
 
+  const sheetGrids = await Promise.all(SHEETS.map((sheet) => fetchSheetGrid(sheet)));
   const data = {};
-  for (const sheet of SHEETS) {
-    const sheets = await fetchSheetGrid(sheet);
-    const layout = buildSheetLayout(sheets);
-    data[sheet] = layout;
-  }
+  SHEETS.forEach((sheet, index) => {
+    data[sheet] = buildSheetLayout(sheetGrids[index]);
+  });
 
   cache = { timestamp: Date.now(), data };
   return data;

@@ -187,7 +187,14 @@ export function buildDelayHistory(info) {
       if (!history[headcode]) {
         history[headcode] = {};
       }
-      history[headcode][currentLocation] = delta;
+      if (!history[headcode][currentLocation]) {
+        history[headcode][currentLocation] = { arr: null, dep: null };
+      }
+      if (type === "arr") {
+        history[headcode][currentLocation].arr = delta;
+      } else if (type === "dep") {
+        history[headcode][currentLocation].dep = delta;
+      }
     }
   });
 
@@ -316,7 +323,13 @@ function getBestKnownDelayForHeadcode(delayHistory, timings, headcode, targetLoc
     let bestDelay = null;
     let bestDelta = null;
 
-    for (const [location, delay] of Object.entries(headcodeHistory)) {
+    for (const [location, delayData] of Object.entries(headcodeHistory)) {
+      // delayData is now { arr, dep }, prefer departure delay, then arrival
+      const delay = delayData?.dep !== undefined ? delayData.dep : delayData?.arr;
+      if (delay === null || delay === undefined) {
+        continue;
+      }
+
       const sourceTime = getScheduledTimeForHeadcodeLocation(timings, headcode, location);
       if (sourceTime === null || sourceTime === undefined) {
         continue;
@@ -346,8 +359,13 @@ function getBestKnownDelayForHeadcode(delayHistory, timings, headcode, targetLoc
   }
   for (let i = targetIdx; i >= 0; i -= 1) {
     const location = locationOrder[i];
-    if (headcodeHistory[location] !== undefined) {
-      return headcodeHistory[location];
+    const delayData = headcodeHistory[location];
+    if (delayData !== undefined) {
+      // Prefer departure delay, then arrival
+      const delay = delayData?.dep !== undefined ? delayData.dep : delayData?.arr;
+      if (delay !== null && delay !== undefined) {
+        return delay;
+      }
     }
   }
 

@@ -181,3 +181,83 @@ export function filterByDuty(data, duty) {
     return a.headcode.localeCompare(b.headcode);
   });
 }
+
+function getServiceSummaryFromPoints(points, serviceMeta) {
+  const firstPoint = points[0] || null;
+  const nextPoint = points[1] || firstPoint;
+  const lastPoint = points[points.length - 1] || null;
+
+  return {
+    origin: String(serviceMeta?.from || firstPoint?.location || "").trim(),
+    destination: String(serviceMeta?.to || lastPoint?.location || "").trim(),
+    nextStop: String(nextPoint?.location || "").trim(),
+  };
+}
+
+function getServiceSortKeyFromOverview(entry) {
+  if (entry.latenessMinutes === null) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  const latenessPriority = Number(entry.latenessMinutes || 0);
+  const nextStopTime = entry.nextStopSortKey;
+  if (nextStopTime === null) {
+    return latenessPriority;
+  }
+  return latenessPriority * 10000 - nextStopTime;
+}
+
+export function buildNetworkOverview(data) {
+  const delayContexts = getDelayContexts(data);
+  const entries = [];
+
+  for (const [sheet, info] of Object.entries(data)) {
+    for (let columnIndex = 2; columnIndex < (info.headers || []).length; columnIndex += 1) {
+      const headcode = normalizeHeadcode(info.headers[columnIndex]);
+      if (!headcode) {
+        continue;
+      }
+
+      const points = buildTimingPointsForColumn(info, columnIndex);
+      if (!points.length) {
+        continue;
+      }
+
+      const serviceMeta = info.serviceMeta?.[columnIndex] || null;
+      const summary = getServiceSummaryFromPoints(points, serviceMeta);
+      const nextStopPoint = points[1] || points[0] || null;
+      const nextStopLocation = summary.nextStop || nextStopPoint?.location || "";
+      const latenessMinutes = nextStopLocation
+        ? getAnticipatedDelayForHeadcode(delayContexts, sheet, headcode, nextStopLocation)
+        : 0;
+
+      entries.push({
+        sheet,
+        headcode,
+        serviceMeta,
+        headcodeNote: info.headerNotes?.[columnIndex] || "",
+        direction: serviceMeta?.direction || "",
+        origin: summary.origin,
+        destination: summary.destination,
+        nextStop: nextStopLocation,
+        latenessMinutes,
+        nextStopSortKey: parseTimeToHalfMinutes(nextStopPoint?.arrival || nextStopPoint?.departure || ""),
+      });
+    }
+  }
+
+  return entries.sort((a, b) => {
+    const aDelay = Number(a.latenessMinutes || 0);
+    const bDelay = Number(b.latenessMinutes || 0);
+    if (aDelay !== bDelay) {
+      return bDelay - aDelay;
+    }
+
+    const aSort = getServiceSortKeyFromOverview(a);
+    const bSort = getServiceSortKeyFromOverview(b);
+    if (aSort !== bSort) {
+      return aSort - bSort;
+    }
+
+    return a.headcode.localeCompare(b.headcode);
+  });
+}

@@ -1,9 +1,10 @@
 import { SHEET_ID } from "./config.js";
 import { buildLineups } from "./lineups.js";
+import { filterByDuty, filterByHeadcode } from "./timetable.js";
 import { renderDutyPage, renderLineupPage, renderLineupsIndex, renderPage } from "./render.js";
 import { getSheetIdMap, getSheetsClient, loadData, resetCache } from "./sheets.js";
-import { filterByDuty, filterByHeadcode } from "./timetable.js";
 import { buildNoteFromActual, getDelayStyle } from "./utils.js";
+import { exportTimingDiagrams } from "./diagrams.js";
 
 export function registerRoutes(app) {
   app.post("/note", async (req, res) => {
@@ -146,6 +147,8 @@ export function registerRoutes(app) {
     }
   });
 
+  // Network overview routes removed
+
   app.get("/duties", async (req, res) => {
     const duty = typeof req.query.duty === "string" ? req.query.duty : "";
     let results = [];
@@ -173,6 +176,22 @@ export function registerRoutes(app) {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";
       res.type("html").send(renderDutyPage({ duty, results: [], error: message }));
+    }
+  });
+
+  app.get("/diagram", async (req, res) => {
+    try {
+      const data = await loadData();
+      const filename = `timing_diagram_${new Date().toISOString().split("T")[0]}.pdf`;
+      const filepath = `/tmp/${filename}`;
+      
+      await exportTimingDiagrams(data, filepath);
+      
+      res.download(filepath, filename);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unexpected error";
+      console.error("/diagram error", err);
+      res.status(500).json({ error: "Failed to generate diagram: " + message });
     }
   });
 }

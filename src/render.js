@@ -1,5 +1,36 @@
 import { buildEstimatedTimingPoints, escapeHtml, formatHalfMinutesToTime, parseTimeToHalfMinutes } from "./utils.js";
 
+function formatDelayLabel(delayMinutes) {
+  const minutes = Number(delayMinutes || 0);
+  if (minutes === 0) {
+    return "On time";
+  }
+  if (minutes > 0) {
+    return `${minutes} min late`;
+  }
+  return `${Math.abs(minutes)} min early`;
+}
+
+function renderDelayBadge(delayMinutes) {
+  const minutes = Number(delayMinutes || 0);
+  const className = minutes > 0 ? "late" : minutes < 0 ? "early" : "on-time";
+  return `<span class="delay-pill ${className}">${escapeHtml(formatDelayLabel(minutes))}</span>`;
+}
+
+function renderNav(activePage) {
+  const navItems = [
+    ["lookup", "/", "Lookup"],
+    ["duties", "/duties", "Duties"],
+    ["lineups", "/lineups", "Lineups"],
+  ];
+
+  return `<div class="nav">
+    ${navItems
+      .map(([key, href, label]) => `<a href="${href}" class="nav-link${key === activePage ? " active" : ""}">${label}</a>`)
+      .join("")}
+  </div>`;
+}
+
 function renderCellDisplay(scheduledValue, noteValue) {
   const scheduled = String(scheduledValue || "").trim();
   const note = String(noteValue || "").trim();
@@ -167,6 +198,24 @@ function renderServiceSections(results) {
     .join("");
 }
 
+  function renderOverviewRows(entries) {
+    return entries
+      .map((entry) => {
+        const warningIcon = entry.headcodeNote
+          ? ` <span class="warning-icon" data-note="${escapeHtml(entry.headcodeNote)}" data-headcode="${escapeHtml(entry.headcode)}" title="Route change note">⚠️</span>`
+          : "";
+        return `<tr>
+          <th>${escapeHtml(entry.headcode)}${warningIcon}</th>
+          <td>${escapeHtml(entry.direction || "")}</td>
+          <td>${escapeHtml(entry.origin || "")}</td>
+          <td>${escapeHtml(entry.nextStop || "")}</td>
+          <td>${escapeHtml(entry.destination || "")}</td>
+          <td>${renderDelayBadge(entry.latenessMinutes)}</td>
+        </tr>`;
+      })
+      .join("");
+  }
+
 function renderNoteModal() {
   return `
       <div id="note-modal" class="modal" aria-hidden="true">
@@ -199,11 +248,7 @@ function renderNoteScript(refreshWhenQueryKeyExists = "headcode") {
       let activeCell = null;
 
       if (params.get("${refreshWhenQueryKeyExists}")) {
-        setInterval(() => {
-          if (!modal.classList.contains("open")) {
-            window.location.reload();
-          }
-        }, 10000);
+        // auto-reload disabled
       }
 
       const closeModal = ({ refresh = false } = {}) => {
@@ -212,7 +257,7 @@ function renderNoteScript(refreshWhenQueryKeyExists = "headcode") {
         status.textContent = "";
         activeCell = null;
         if (refresh && params.get("${refreshWhenQueryKeyExists}")) {
-          window.location.reload();
+          // refresh action intentionally left blank (auto-reload removed)
         }
       };
 
@@ -309,11 +354,7 @@ export function renderPage({ headcode, results, error }) {
     title: "Timetable Lookup",
     body: `
       <header>
-        <div class="nav">
-          <a href="/" class="nav-link active">Lookup</a>
-          <a href="/duties" class="nav-link">Duties</a>
-          <a href="/lineups" class="nav-link">Lineups</a>
-        </div>
+        ${renderNav("lookup")}
         <h1>Timetable Lookup</h1>
         <p>Search for a headcode across WTT-UP and WTT-DOWN.</p>
         <p class="legend">Click a platform/arrival/departure cell to add an actual time (or OT) or actual platform.</p>
@@ -346,11 +387,7 @@ export function renderDutyPage({ duty, results, error }) {
     title: "Duty View",
     body: `
       <header>
-        <div class="nav">
-          <a href="/" class="nav-link">Lookup</a>
-          <a href="/duties" class="nav-link active">Duties</a>
-          <a href="/lineups" class="nav-link">Lineups</a>
-        </div>
+        ${renderNav("duties")}
         <h1>Duty View</h1>
         <p>Enter the duty number from the third character of a headcode to see every service booked on that duty.</p>
       </header>
@@ -367,11 +404,7 @@ export function renderDutyPage({ duty, results, error }) {
       ${resultHtml}
       ${renderNoteModal()}
     `,
-    script: `${renderNoteScript("duty")}
-      setInterval(() => {
-        window.location.reload();
-      }, 10000);
-    `,
+    script: `${renderNoteScript("duty")}`,
   });
 }
 
@@ -397,20 +430,14 @@ export function renderLineupsIndex({ locations, error }) {
     title: "Lineups",
     body: `
       <header>
-        <div class="nav">
-          <a href="/" class="nav-link">Lookup</a>
-          <a href="/duties" class="nav-link">Duties</a>
-          <a href="/lineups" class="nav-link active">Lineups</a>
-        </div>
+        ${renderNav("lineups")}
         <h1>Lineups</h1>
         <p>Choose a timing point to see every arrival and departure.</p>
       </header>
       ${content}
     `,
     script: `
-      setInterval(() => {
-        window.location.reload();
-      }, 10000);
+      // auto-reload disabled
     `,
   });
 }
@@ -529,11 +556,7 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
     title: `Lineups - ${location || "Unknown"}`,
     body: `
       <header>
-        <div class="nav">
-          <a href="/" class="nav-link">Lookup</a>
-          <a href="/duties" class="nav-link">Duties</a>
-          <a href="/lineups" class="nav-link active">Lineups</a>
-        </div>
+        ${renderNav("lineups")}
         <h1>${escapeHtml(location || "Lineup")}</h1>
         <p>All trains calling at this timing point, sorted by arrival (or departure).</p>
         <p><a href="${toggleUrl}" style="font-weight: 600;">${toggleText}</a></p>
@@ -626,15 +649,13 @@ export function renderLineupPage({ location, combined, considerDelays, error }) 
       setInterval(insertNowMarker, 30000);
 
       if (window.location.pathname.startsWith('/lineups/')) {
-        setInterval(() => {
-          if (!routeModal.classList.contains("open")) {
-            window.location.reload();
-          }
-        }, 10000);
+        // auto-reload disabled for lineup pages
       }
     `,
   });
 }
+
+// Network overview page removed
 
 function renderShell({ title, body, script }) {
   return `<!doctype html>
@@ -769,6 +790,27 @@ function renderShell({ title, body, script }) {
       .nav-link.active {
         background: #5b6f3b;
         color: white;
+      }
+      .delay-pill {
+        display: inline-block;
+        min-width: 84px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+      .delay-pill.on-time {
+        background: #dff0d4;
+        color: #315126;
+      }
+      .delay-pill.late {
+        background: #f7d7d0;
+        color: #7f2418;
+      }
+      .delay-pill.early {
+        background: #dbe8fb;
+        color: #284c80;
       }
       .grid {
         display: grid;

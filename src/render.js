@@ -295,12 +295,12 @@ function renderNoteScript(refreshWhenQueryKeyExists = "headcode") {
       });
 
       cancel.addEventListener("click", () => {
-        closeModal({ refresh: true });
+        closeModal();
       });
 
       modal.addEventListener("click", (event) => {
         if (event.target === modal) {
-          closeModal({ refresh: true });
+          closeModal();
         }
       });
 
@@ -332,7 +332,8 @@ function renderNoteScript(refreshWhenQueryKeyExists = "headcode") {
           }
           status.textContent = "Saved note: " + data.note;
           setTimeout(() => {
-            closeModal({ refresh: true });
+            closeModal();
+            window.location.reload();
           }, 400);
         } catch (err) {
           status.textContent = "Failed to save note.";
